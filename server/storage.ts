@@ -218,7 +218,7 @@ export class DatabaseStorage implements IStorage {
   async getConversations(userId: number): Promise<{ user: User; lastMessage: Message | null; unreadCount: number }[]> {
     // Get all users who have exchanged messages with the current user
     const conversationUsers = await db
-      .selectDistinct({ userId: users.id, name: users.name, email: users.email, createdAt: users.createdAt })
+      .selectDistinct({ id: users.id, name: users.name, email: users.email, createdAt: users.createdAt })
       .from(users)
       .innerJoin(messages, 
         sql`(${messages.senderId} = ${userId} AND ${messages.receiverId} = ${users.id}) OR 
@@ -233,8 +233,8 @@ export class DatabaseStorage implements IStorage {
         .select()
         .from(messages)
         .where(
-          sql`(${messages.senderId} = ${userId} AND ${messages.receiverId} = ${user.userId}) OR 
-              (${messages.receiverId} = ${userId} AND ${messages.senderId} = ${user.userId})`
+          sql`(${messages.senderId} = ${userId} AND ${messages.receiverId} = ${user.id}) OR 
+              (${messages.receiverId} = ${userId} AND ${messages.senderId} = ${user.id})`
         )
         .orderBy(desc(messages.createdAt))
         .limit(1);
@@ -246,7 +246,7 @@ export class DatabaseStorage implements IStorage {
         .where(
           and(
             eq(messages.receiverId, userId),
-            eq(messages.senderId, user.userId),
+            eq(messages.senderId, user.id),
             eq(messages.read, false)
           )
         );
