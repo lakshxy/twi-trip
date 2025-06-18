@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 
 interface DemoAuthWrapperProps {
@@ -7,12 +7,14 @@ interface DemoAuthWrapperProps {
 
 export function DemoAuthWrapper({ children }: DemoAuthWrapperProps) {
   const { user, isLoading, demoLogin } = useAuth();
+  const [hasAttemptedLogin, setHasAttemptedLogin] = useState(false);
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (!isLoading && !user && !hasAttemptedLogin) {
+      setHasAttemptedLogin(true);
       demoLogin().catch(console.error);
     }
-  }, [isLoading, user, demoLogin]);
+  }, [isLoading, user, demoLogin, hasAttemptedLogin]);
 
   if (isLoading) {
     return (
