@@ -30,6 +30,29 @@
   --travel-accent: hsl(204, 71%, 57%);
   --travel-dark: hsl(0, 0%, 10.2%);
   --travel-gray: hsl(0, 0%, 40%);
+  
+  /* New coral/rose theme colors */
+  --coral-50: hsl(16, 100%, 97%);
+  --coral-100: hsl(16, 100%, 94%);
+  --coral-200: hsl(16, 100%, 87%);
+  --coral-300: hsl(16, 100%, 78%);
+  --coral-400: hsl(16, 100%, 66%);
+  --coral-500: hsl(16, 84%, 56%);
+  --coral-600: hsl(16, 84%, 46%);
+  --coral-700: hsl(16, 84%, 36%);
+  --coral-800: hsl(16, 84%, 26%);
+  --coral-900: hsl(16, 84%, 16%);
+  
+  --rose-50: hsl(355, 100%, 97%);
+  --rose-100: hsl(355, 100%, 94%);
+  --rose-200: hsl(355, 100%, 87%);
+  --rose-300: hsl(355, 100%, 78%);
+  --rose-400: hsl(355, 100%, 66%);
+  --rose-500: hsl(355, 84%, 56%);
+  --rose-600: hsl(355, 84%, 46%);
+  --rose-700: hsl(355, 84%, 36%);
+  --rose-800: hsl(355, 84%, 26%);
+  --rose-900: hsl(355, 84%, 16%);
 }
 
 .dark {
@@ -137,3 +160,25 @@
 .animate-pulse-glow {
   animation: pulseGlow 3s infinite;
 }
+
+/* Coral color utilities */
+.bg-coral-50 { background-color: var(--coral-50); }
+.bg-coral-100 { background-color: var(--coral-100); }
+.bg-coral-200 { background-color: var(--coral-200); }
+.bg-coral-300 { background-color: var(--coral-300); }
+.bg-coral-400 { background-color: var(--coral-400); }
+.bg-coral-500 { background-color: var(--coral-500); }
+.bg-coral-600 { background-color: var(--coral-600); }
+.text-coral-500 { color: var(--coral-500); }
+.text-coral-600 { color: var(--coral-600); }
+
+/* Rose color utilities */
+.bg-rose-50 { background-color: var(--rose-50); }
+.bg-rose-100 { background-color: var(--rose-100); }
+.bg-rose-200 { background-color: var(--rose-200); }
+.bg-rose-300 { background-color: var(--rose-300); }
+.bg-rose-400 { background-color: var(--rose-400); }
+.bg-rose-500 { background-color: var(--rose-500); }
+.bg-rose-600 { background-color: var(--rose-600); }
+.text-rose-500 { color: var(--rose-500); }
+.text-rose-600 { color: var(--rose-600); }
