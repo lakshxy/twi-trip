@@ -42,6 +42,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/auth/demo-login", async (req, res) => {
+    try {
+      // Create or get demo user
+      const demoEmail = "demo@travelswipe.com";
+      let user = await storage.getUserByEmail(demoEmail);
+      
+      if (!user) {
+        // Create demo user
+        user = await storage.createUser({ 
+          email: demoEmail, 
+          name: "Demo Explorer" 
+        });
+      }
+
+      // Store user session
+      (req.session as any).userId = user.id;
+      res.json({ user });
+    } catch (error) {
+      console.error("Demo login error:", error);
+      res.status(500).json({ message: "Demo login failed" });
+    }
+  });
+
   app.post("/api/auth/logout", (req, res) => {
     req.session.destroy(() => {
       res.json({ message: "Logged out successfully" });
