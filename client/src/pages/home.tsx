@@ -41,10 +41,10 @@ export default function HomePage() {
               <div className="flex-1 text-left lg:text-left animate-slide-in-left">
                 <h1 className="text-5xl lg:text-7xl font-bold text-travel-navy mb-8 leading-tight">
                   Connect with
-                  <span className="block text-transparent bg-clip-text bg-gradient-accent animate-gradient">
+                  <span className="block text-travel-navy font-extrabold">
                     Fellow Travelers
                   </span>
-                  <span className="block text-travel-mint">Worldwide</span>
+                  <span className="block text-travel-mint font-bold">Worldwide</span>
                 </h1>
                 <p className="text-xl text-travel-navy/80 mb-10 max-w-2xl leading-relaxed font-medium">
                   Discover authentic homestays, find travel companions, and share unforgettable adventures 
@@ -142,7 +142,7 @@ export default function HomePage() {
           <div className="text-center mb-20 animate-fade-in">
             <h2 className="text-4xl lg:text-6xl font-bold text-travel-navy mb-8">
               Everything You Need for
-              <span className="block text-transparent bg-clip-text bg-gradient-accent animate-gradient">
+              <span className="block text-travel-lavender font-extrabold">
                 Amazing Travels
               </span>
             </h2>

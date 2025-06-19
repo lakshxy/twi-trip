@@ -99,8 +99,8 @@ export default function ProfilePage() {
     "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=150&h=150",
   ];
 
-  const coverImage = placeholderImages[user?.id % placeholderImages.length];
-  const avatarImage = profile?.profileImage || profileImages[user?.id % profileImages.length];
+  const coverImage = placeholderImages[(user?.id || 0) % placeholderImages.length];
+  const avatarImage = profile?.profileImage || profileImages[(user?.id || 0) % profileImages.length];
 
   return (
     <div className="p-6 max-w-2xl mx-auto">

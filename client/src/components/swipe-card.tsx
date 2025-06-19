@@ -77,7 +77,7 @@ export default function SwipeCard({ profile, onSwipe }: SwipeCardProps) {
           </div>
         )}
         
-        {profile.tripCount > 0 && (
+        {profile.tripCount && profile.tripCount > 0 && (
           <p className="text-xs text-travel-navy/60 font-medium">
             {profile.tripCount} trip{profile.tripCount !== 1 ? 's' : ''} completed
           </p>
