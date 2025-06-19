@@ -18,56 +18,59 @@ export default function SwipeCard({ profile, onSwipe }: SwipeCardProps) {
   const profileImage = profile.profileImage || placeholderImages[profile.userId % placeholderImages.length];
 
   return (
-    <Card className="swipe-card absolute inset-0 overflow-hidden cursor-pointer">
-      <div className="relative h-64">
+    <Card className="swipe-card absolute inset-0 overflow-hidden cursor-pointer modern-card border-0 shadow-2xl">
+      <div className="relative h-80">
         <img 
           src={profileImage}
           alt={`${profile.user.name}'s profile`}
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-      </div>
-      
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-xl font-bold text-travel-dark">
-            {profile.user.name}{profile.age && `, ${profile.age}`}
-          </h3>
-          {profile.rating && Number(profile.rating) > 0 && (
-            <span className="text-yellow-500 text-sm font-medium">
-              ⭐ {Number(profile.rating).toFixed(1)}
-            </span>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+        <div className="absolute bottom-4 left-4 right-4 text-white">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-2xl font-bold">
+              {profile.user.name}{profile.age && `, ${profile.age}`}
+            </h3>
+            {profile.rating && Number(profile.rating) > 0 && (
+              <div className="flex items-center bg-white/20 backdrop-blur-sm rounded-full px-3 py-1">
+                <span className="text-yellow-400 text-lg">⭐</span>
+                <span className="text-white text-sm font-semibold ml-1">
+                  {Number(profile.rating).toFixed(1)}
+                </span>
+              </div>
+            )}
+          </div>
+          
+          {(profile.city || profile.state) && (
+            <div className="flex items-center text-white/90 mb-2">
+              <MapPin className="w-4 h-4 mr-2" />
+              <span className="text-sm font-medium">
+                {[profile.city, profile.state].filter(Boolean).join(", ")}
+              </span>
+            </div>
           )}
         </div>
-        
-        {(profile.city || profile.state) && (
-          <div className="flex items-center text-gray-600 mb-3">
-            <MapPin className="w-4 h-4 mr-1" />
-            <span className="text-sm">
-              {[profile.city, profile.state].filter(Boolean).join(", ")}
-            </span>
-          </div>
-        )}
-        
+      </div>
+      
+      <CardContent className="p-6 bg-white">
         {profile.bio && (
-          <p className="text-sm text-gray-600 mb-4 line-clamp-3">
+          <p className="text-travel-navy/80 mb-4 line-clamp-3 text-base leading-relaxed">
             {profile.bio}
           </p>
         )}
         
         {profile.interests && profile.interests.length > 0 && (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 mb-4">
             {profile.interests.slice(0, 3).map((interest, index) => (
               <Badge 
                 key={index}
-                variant="secondary"
-                className="text-xs bg-travel-primary/10 text-travel-primary hover:bg-travel-primary/20"
+                className="text-xs bg-travel-mint/20 text-travel-mint hover:bg-travel-mint/30 border-0 rounded-xl px-3 py-1 font-medium"
               >
                 {interest}
               </Badge>
             ))}
             {profile.interests.length > 3 && (
-              <Badge variant="outline" className="text-xs">
+              <Badge className="text-xs bg-travel-lavender/20 text-travel-lavender border-0 rounded-xl px-3 py-1 font-medium">
                 +{profile.interests.length - 3} more
               </Badge>
             )}
@@ -75,7 +78,7 @@ export default function SwipeCard({ profile, onSwipe }: SwipeCardProps) {
         )}
         
         {profile.tripCount > 0 && (
-          <p className="text-xs text-travel-accent mt-2">
+          <p className="text-xs text-travel-navy/60 font-medium">
             {profile.tripCount} trip{profile.tripCount !== 1 ? 's' : ''} completed
           </p>
         )}

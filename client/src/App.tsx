@@ -25,9 +25,9 @@ function AppRouter() {
       {/* Protected app routes with auto demo login */}
       <Route path="/swipe">
         <DemoAuthWrapper>
-          <div className="min-h-screen bg-gray-50">
+          <div className="min-h-screen bg-gradient-to-br from-travel-light via-white to-travel-beige transition-all duration-500">
             <Navigation />
-            <main className="pb-20 md:pb-0">
+            <main className="pb-24 md:pb-0 animate-fade-in">
               <Swipe />
             </main>
           </div>
@@ -36,9 +36,9 @@ function AppRouter() {
       
       <Route path="/profile">
         <DemoAuthWrapper>
-          <div className="min-h-screen bg-gray-50">
+          <div className="min-h-screen bg-gradient-to-br from-travel-light via-white to-travel-beige transition-all duration-500">
             <Navigation />
-            <main className="pb-20 md:pb-0">
+            <main className="pb-24 md:pb-0 animate-fade-in">
               <Profile />
             </main>
           </div>
@@ -47,9 +47,9 @@ function AppRouter() {
       
       <Route path="/properties">
         <DemoAuthWrapper>
-          <div className="min-h-screen bg-gray-50">
+          <div className="min-h-screen bg-gradient-to-br from-travel-light via-white to-travel-beige transition-all duration-500">
             <Navigation />
-            <main className="pb-20 md:pb-0">
+            <main className="pb-24 md:pb-0 animate-fade-in">
               <Properties />
             </main>
           </div>
@@ -58,9 +58,9 @@ function AppRouter() {
       
       <Route path="/rides">
         <DemoAuthWrapper>
-          <div className="min-h-screen bg-gray-50">
+          <div className="min-h-screen bg-gradient-to-br from-travel-light via-white to-travel-beige transition-all duration-500">
             <Navigation />
-            <main className="pb-20 md:pb-0">
+            <main className="pb-24 md:pb-0 animate-fade-in">
               <Rides />
             </main>
           </div>
@@ -69,9 +69,9 @@ function AppRouter() {
       
       <Route path="/messages">
         <DemoAuthWrapper>
-          <div className="min-h-screen bg-gray-50">
+          <div className="min-h-screen bg-gradient-to-br from-travel-light via-white to-travel-beige transition-all duration-500">
             <Navigation />
-            <main className="pb-20 md:pb-0">
+            <main className="pb-24 md:pb-0 animate-fade-in">
               <Messages />
             </main>
           </div>

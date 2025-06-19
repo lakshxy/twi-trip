@@ -62,11 +62,12 @@ export default {
           ring: "var(--sidebar-ring)",
         },
         travel: {
-          primary: "var(--travel-primary)",
-          secondary: "var(--travel-secondary)",
-          accent: "var(--travel-accent)",
+          navy: "var(--travel-navy)",
+          lavender: "var(--travel-lavender)",
+          mint: "var(--travel-mint)",
+          beige: "var(--travel-beige)",
+          light: "var(--travel-light)",
           dark: "var(--travel-dark)",
-          gray: "var(--travel-gray)",
         },
       },
       keyframes: {
