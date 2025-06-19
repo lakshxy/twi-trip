@@ -13,6 +13,8 @@ import Profile from "@/pages/profile";
 import Properties from "@/pages/properties";
 import Rides from "@/pages/rides";
 import Messages from "@/pages/messages";
+import Groups from "@/pages/groups";
+import Itinerary from "@/pages/itinerary";
 import Navigation from "@/components/navigation";
 
 function AppRouter() {
@@ -73,6 +75,28 @@ function AppRouter() {
             <Navigation />
             <main className="pb-24 md:pb-0 animate-fade-in">
               <Messages />
+            </main>
+          </div>
+        </DemoAuthWrapper>
+      </Route>
+
+      <Route path="/groups">
+        <DemoAuthWrapper>
+          <div className="min-h-screen bg-gradient-to-br from-travel-light via-white to-travel-beige transition-all duration-500">
+            <Navigation />
+            <main className="pb-24 md:pb-0 animate-fade-in">
+              <Groups />
+            </main>
+          </div>
+        </DemoAuthWrapper>
+      </Route>
+
+      <Route path="/itinerary">
+        <DemoAuthWrapper>
+          <div className="min-h-screen bg-gradient-to-br from-travel-light via-white to-travel-beige transition-all duration-500">
+            <Navigation />
+            <main className="pb-24 md:pb-0 animate-fade-in">
+              <Itinerary />
             </main>
           </div>
         </DemoAuthWrapper>

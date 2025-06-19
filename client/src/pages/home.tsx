@@ -154,82 +154,112 @@ export default function HomePage() {
           {/* Feature Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Smart Matching */}
-            <Card className="modern-card bg-gradient-to-br from-white to-travel-lavender/10 hover:scale-105 border-0">
-              <CardContent className="p-8 text-center">
-                <div className="w-20 h-20 bg-gradient-primary rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                  <Heart className="w-10 h-10 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-travel-navy mb-4">Smart Matching</h3>
-                <p className="text-travel-navy/70 leading-relaxed font-medium">
-                  Swipe through travelers and hosts based on your interests, destination, and travel style.
-                </p>
-              </CardContent>
-            </Card>
+            <Link href="/swipe">
+              <Card className="modern-card bg-gradient-to-br from-white to-travel-lavender/10 hover:scale-105 border-0 cursor-pointer">
+                <CardContent className="p-8 text-center">
+                  <div className="w-20 h-20 bg-gradient-primary rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                    <Heart className="w-10 h-10 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-travel-navy mb-4">Smart Matching</h3>
+                  <p className="text-travel-navy/70 leading-relaxed font-medium mb-4">
+                    Swipe through travelers and hosts based on your interests, destination, and travel style.
+                  </p>
+                  <Button className="bg-gradient-primary text-white px-6 py-2 rounded-xl text-sm font-semibold">
+                    Start Matching
+                  </Button>
+                </CardContent>
+              </Card>
+            </Link>
 
             {/* Authentic Homestays */}
-            <Card className="modern-card bg-gradient-to-br from-white to-travel-mint/10 hover:scale-105 border-0">
-              <CardContent className="p-8 text-center">
-                <div className="w-20 h-20 bg-gradient-secondary rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                  <Home className="w-10 h-10 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-travel-navy mb-4">Authentic Homestays</h3>
-                <p className="text-travel-navy/70 leading-relaxed font-medium">
-                  Stay with verified locals who offer unique accommodations and insider knowledge.
-                </p>
-              </CardContent>
-            </Card>
+            <Link href="/properties">
+              <Card className="modern-card bg-gradient-to-br from-white to-travel-mint/10 hover:scale-105 border-0 cursor-pointer">
+                <CardContent className="p-8 text-center">
+                  <div className="w-20 h-20 bg-gradient-secondary rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                    <Home className="w-10 h-10 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-travel-navy mb-4">Authentic Homestays</h3>
+                  <p className="text-travel-navy/70 leading-relaxed font-medium mb-4">
+                    Stay with verified locals who offer unique accommodations and insider knowledge.
+                  </p>
+                  <Button className="bg-gradient-secondary text-white px-6 py-2 rounded-xl text-sm font-semibold">
+                    Browse Homestays
+                  </Button>
+                </CardContent>
+              </Card>
+            </Link>
 
             {/* Ride Sharing */}
-            <Card className="modern-card bg-gradient-to-br from-white to-travel-beige/30 hover:scale-105 border-0">
-              <CardContent className="p-8 text-center">
-                <div className="w-20 h-20 bg-gradient-accent rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                  <Car className="w-10 h-10 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-travel-navy mb-4">Ride Sharing</h3>
-                <p className="text-travel-navy/70 leading-relaxed font-medium">
-                  Share rides with fellow travelers, split costs, and make new friends on your journey.
-                </p>
-              </CardContent>
-            </Card>
+            <Link href="/rides">
+              <Card className="modern-card bg-gradient-to-br from-white to-travel-beige/30 hover:scale-105 border-0 cursor-pointer">
+                <CardContent className="p-8 text-center">
+                  <div className="w-20 h-20 bg-gradient-accent rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                    <Car className="w-10 h-10 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-travel-navy mb-4">Ride Sharing</h3>
+                  <p className="text-travel-navy/70 leading-relaxed font-medium mb-4">
+                    Share rides with fellow travelers, split costs, and make new friends on your journey.
+                  </p>
+                  <Button className="bg-gradient-accent text-white px-6 py-2 rounded-xl text-sm font-semibold">
+                    Find Rides
+                  </Button>
+                </CardContent>
+              </Card>
+            </Link>
 
             {/* Real-time Chat */}
-            <Card className="modern-card bg-gradient-to-br from-white to-travel-mint/10 hover:scale-105 border-0">
-              <CardContent className="p-8 text-center">
-                <div className="w-20 h-20 bg-gradient-secondary rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                  <MessageCircle className="w-10 h-10 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-travel-navy mb-4">Real-time Chat</h3>
-                <p className="text-travel-navy/70 leading-relaxed font-medium">
-                  Connect instantly with matches through our secure messaging system.
-                </p>
-              </CardContent>
-            </Card>
+            <Link href="/messages">
+              <Card className="modern-card bg-gradient-to-br from-white to-travel-mint/10 hover:scale-105 border-0 cursor-pointer">
+                <CardContent className="p-8 text-center">
+                  <div className="w-20 h-20 bg-gradient-secondary rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                    <MessageCircle className="w-10 h-10 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-travel-navy mb-4">Real-time Chat</h3>
+                  <p className="text-travel-navy/70 leading-relaxed font-medium mb-4">
+                    Connect instantly with matches through our secure messaging system.
+                  </p>
+                  <Button className="bg-gradient-secondary text-white px-6 py-2 rounded-xl text-sm font-semibold">
+                    Start Chatting
+                  </Button>
+                </CardContent>
+              </Card>
+            </Link>
 
-            {/* Activity Partners */}
-            <Card className="modern-card bg-gradient-to-br from-white to-travel-lavender/10 hover:scale-105 border-0">
-              <CardContent className="p-8 text-center">
-                <div className="w-20 h-20 bg-gradient-accent rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                  <Users className="w-10 h-10 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-travel-navy mb-4">Activity Partners</h3>
-                <p className="text-travel-navy/70 leading-relaxed font-medium">
-                  Find companions for hiking, sightseeing, dining, or any adventure you have in mind.
-                </p>
-              </CardContent>
-            </Card>
+            {/* Group Travel Finder */}
+            <Link href="/groups">
+              <Card className="modern-card bg-gradient-to-br from-white to-travel-lavender/10 hover:scale-105 border-0 cursor-pointer">
+                <CardContent className="p-8 text-center">
+                  <div className="w-20 h-20 bg-gradient-accent rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                    <Users className="w-10 h-10 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-travel-navy mb-4">Group Travel Finder</h3>
+                  <p className="text-travel-navy/70 leading-relaxed font-medium mb-4">
+                    Join travel agencies and groups for organized trips. Perfect for solo travelers or couples seeking group adventures.
+                  </p>
+                  <Button className="bg-gradient-accent text-white px-6 py-2 rounded-xl text-sm font-semibold">
+                    Find Groups
+                  </Button>
+                </CardContent>
+              </Card>
+            </Link>
 
-            {/* Location-based */}
-            <Card className="modern-card bg-gradient-to-br from-white to-travel-beige/30 hover:scale-105 border-0">
-              <CardContent className="p-8 text-center">
-                <div className="w-20 h-20 bg-gradient-primary rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                  <Globe className="w-10 h-10 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-travel-navy mb-4">Location-based</h3>
-                <p className="text-travel-navy/70 leading-relaxed font-medium">
-                  Discover opportunities near you with smart filtering and location-based matching.
-                </p>
-              </CardContent>
-            </Card>
+            {/* Travel Itinerary Guide */}
+            <Link href="/itinerary">
+              <Card className="modern-card bg-gradient-to-br from-white to-travel-beige/30 hover:scale-105 border-0 cursor-pointer">
+                <CardContent className="p-8 text-center">
+                  <div className="w-20 h-20 bg-gradient-primary rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                    <MapPin className="w-10 h-10 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-travel-navy mb-4">Travel Itinerary Guide</h3>
+                  <p className="text-travel-navy/70 leading-relaxed font-medium mb-4">
+                    Discover popular places, activities, and efficient daily itineraries. Make the most of every travel day.
+                  </p>
+                  <Button className="bg-gradient-primary text-white px-6 py-2 rounded-xl text-sm font-semibold">
+                    Explore Guides
+                  </Button>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
         </div>
       </div>
