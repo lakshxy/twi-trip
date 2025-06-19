@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/lib/auth";
 
 interface DemoAuthWrapperProps {
@@ -9,12 +9,22 @@ export function DemoAuthWrapper({ children }: DemoAuthWrapperProps) {
   const { user, isLoading, demoLogin } = useAuth();
   const [hasAttemptedLogin, setHasAttemptedLogin] = useState(false);
 
-  useEffect(() => {
-    if (!isLoading && !user && !hasAttemptedLogin) {
+  const attemptLogin = useCallback(async () => {
+    if (!hasAttemptedLogin && !isLoading && !user) {
       setHasAttemptedLogin(true);
-      demoLogin().catch(console.error);
+      try {
+        await demoLogin();
+      } catch (error) {
+        console.error('Demo login failed:', error);
+        // Reset the flag to allow retry
+        setHasAttemptedLogin(false);
+      }
     }
-  }, [isLoading, user, demoLogin, hasAttemptedLogin]);
+  }, [hasAttemptedLogin, isLoading, user, demoLogin]);
+
+  useEffect(() => {
+    attemptLogin();
+  }, [attemptLogin]);
 
   if (isLoading) {
     return (
