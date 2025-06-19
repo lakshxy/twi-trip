@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { MapPin, Camera, Star, User } from "lucide-react";
+import { MapPin, Camera, Star, User, Home, Car } from "lucide-react";
 import type { Profile, User as UserType } from "@shared/schema";
 
 export default function ProfilePage() {
