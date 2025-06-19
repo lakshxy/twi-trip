@@ -32,9 +32,9 @@ export default function Navigation() {
               <Link href="/">
                 <div className="flex items-center space-x-3 hover:scale-105 transition-transform duration-300">
                   <div className="w-8 h-8 bg-gradient-primary rounded-xl flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">TS</span>
+                    <span className="text-white font-bold text-sm">TT</span>
                   </div>
-                  <h1 className="text-2xl font-bold text-travel-navy">TravelSwipe</h1>
+                  <h1 className="text-2xl font-bold text-travel-navy">TickTrip</h1>
                 </div>
               </Link>
               <span className="text-travel-navy/70 font-medium">Hello, {user?.name}!</span>

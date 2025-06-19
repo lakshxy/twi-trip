@@ -22,7 +22,7 @@ export default function HomePage() {
               <div className="w-12 h-12 bg-gradient-primary rounded-2xl flex items-center justify-center animate-logo-spin shadow-lg">
                 <Compass className="w-7 h-7 text-white" />
               </div>
-              <h1 className="text-travel-navy text-3xl font-bold">TravelSwipe</h1>
+              <h1 className="text-travel-navy text-3xl font-bold">TickTrip</h1>
             </div>
             <Link href="/swipe">
               <Button className="bg-gradient-primary hover:shadow-xl transition-all duration-500 text-white px-8 py-3 rounded-2xl font-semibold hover:scale-105">
@@ -312,13 +312,13 @@ export default function HomePage() {
             <div className="w-12 h-12 bg-gradient-secondary rounded-2xl flex items-center justify-center animate-logo-spin">
               <Compass className="w-7 h-7 text-white" />
             </div>
-            <h3 className="text-3xl font-bold text-white">TravelSwipe</h3>
+            <h3 className="text-3xl font-bold text-white">TickTrip</h3>
           </div>
           <p className="text-travel-navy/60 mb-8 max-w-2xl mx-auto text-lg">
             Connecting travelers worldwide through authentic experiences and meaningful connections.
           </p>
           <div className="flex items-center justify-center space-x-8 text-travel-navy/50">
-            <span>© 2024 TravelSwipe</span>
+            <span>© 2024 TickTrip</span>
             <span>•</span>
             <span>Available Worldwide</span>
             <span>•</span>

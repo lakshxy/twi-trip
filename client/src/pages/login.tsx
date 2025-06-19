@@ -90,7 +90,7 @@ export default function LoginPage() {
 
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
-                New to TravelSwipe?{" "}
+                New to TickTrip?{" "}
                 <a href="#" className="text-travel-primary font-semibold hover:underline">
                   Create Account
                 </a>

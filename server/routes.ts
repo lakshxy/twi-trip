@@ -45,7 +45,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/demo-login", async (req, res) => {
     try {
       // Create or get demo user
-      const demoEmail = "demo@travelswipe.com";
+      const demoEmail = "demo@ticktrip.com";
       let user = await storage.getUserByEmail(demoEmail);
       
       if (!user) {
