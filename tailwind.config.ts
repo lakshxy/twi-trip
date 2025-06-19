@@ -61,6 +61,13 @@ export default {
           border: "var(--sidebar-border)",
           ring: "var(--sidebar-ring)",
         },
+        travel: {
+          primary: "var(--travel-primary)",
+          secondary: "var(--travel-secondary)",
+          accent: "var(--travel-accent)",
+          dark: "var(--travel-dark)",
+          gray: "var(--travel-gray)",
+        },
       },
       keyframes: {
         "accordion-down": {

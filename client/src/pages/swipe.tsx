@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Heart, X, Star, MapPin, Filter } from "lucide-react";
+import { Heart, X, Star, MapPin, Filter, Car } from "lucide-react";
 import SwipeCard from "@/components/swipe-card";
 import type { Profile, User } from "@shared/schema";
 

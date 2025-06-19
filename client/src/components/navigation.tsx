@@ -9,7 +9,7 @@ export default function Navigation() {
   const { user, logout } = useAuth();
 
   const navItems = [
-    { path: "/", icon: Heart, label: "Match", id: "swipe" },
+    { path: "/swipe", icon: Heart, label: "Match", id: "swipe" },
     { path: "/profile", icon: User, label: "Profile", id: "profile" },
     { path: "/properties", icon: Home, label: "Stays", id: "properties" },
     { path: "/rides", icon: Car, label: "Rides", id: "rides" },
