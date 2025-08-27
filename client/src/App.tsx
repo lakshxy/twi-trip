@@ -1,12 +1,13 @@
-import { Switch, Route } from "wouter";
-import { queryClient } from "./lib/queryClient";
+import { Switch, Route, Redirect, useLocation } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/lib/auth";
+import { queryClient } from "./lib/queryClient";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Login from "@/pages/login";
+import Signup from "@/pages/signup";
 import Swipe from "@/pages/swipe";
 import Profile from "@/pages/profile";
 import Properties from "@/pages/properties";
@@ -17,19 +18,16 @@ import Itinerary from "@/pages/itinerary";
 import Navigation from "@/components/navigation";
 import Explore from "@/pages/explore";
 import TourGuides from "@/pages/tour-guides";
-import SignupRedirect from "@/pages/signup-redirect";
-import EmailLinkSignupPage from "@/pages/email-link-signup";
-import VerifyEmailLinkPage from "@/pages/verify-email-link";
 import ProfileCreatePage from "@/pages/profile-create";
 import OwnerDashboard from "@/pages/owner-dashboard";
-import DashboardSelector from "@/pages/dashboard-selector";
 import AdminDashboard from "@/pages/admin-dashboard";
 import BottomNavigation from "@/components/bottom-navigation";
 
-// Component to require authentication
-function RequireAuth({ children }: { children: React.ReactNode }) {
+// A component to wrap protected routes
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
-  
+  const [location] = useLocation();
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -37,215 +35,94 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
-  
+
   if (!user) {
-    return <Login />;
+    // a optional redirect query param can be added
+    return <Redirect to={`/login?redirect=${location}`} />;
   }
-  
+
   return <>{children}</>;
 }
 
-function LoadingSpinner() {
+// Layout for pages that are protected and have the bottom navigation
+function ProtectedLayout({ children }: { children: React.ReactNode }) {
+  const isMobile = () => window.innerWidth < 768;
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-travel-light via-white to-travel-beige">
-      <div className="text-center">
-        <div className="w-16 h-16 border-4 border-travel-mint border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-travel-navy text-lg">Loading TwiTrip...</p>
+    <ProtectedRoute>
+      <div className="min-h-screen max-w-7xl mx-auto px-2 sm:px-4 md:px-8 bg-gradient-to-br from-travel-light via-white to-travel-beige transition-all duration-500">
+        <Navigation />
+        <main className={`pb-[calc(3.5rem+env(safe-area-inset-bottom))] ${isMobile() ? '' : 'md:pb-0'} animate-fade-in`}>
+          {children}
+        </main>
+        <BottomNavigation />
       </div>
-    </div>
+    </ProtectedRoute>
   );
 }
 
 function AppRouter() {
-  const { user, isLoading } = useAuth();
-
-  // Do not block rendering entirely on auth loading to avoid spinner lock-ups
-
   return (
     <Switch>
-      {/* Public routes */}
+      {/* --- Public Routes --- */}
       <Route path="/" component={Home} />
       <Route path="/login" component={Login} />
-      <Route path="/signup" component={SignupRedirect} />
-      <Route path="/email-link-signup" component={EmailLinkSignupPage} />
-      <Route path="/verify-email-link" component={VerifyEmailLinkPage} />
-      {/* Ensure root redirects to explore for guests */}
-      <Route path="/">
-        <Home />
-      </Route>
+      <Route path="/signup" component={Signup} />
       
-      {/* Protected routes */}
+      {/* --- Protected Routes --- */}
       <Route path="/explore">
-        <RequireAuth>
-          <div className="min-h-screen max-w-7xl mx-auto px-2 sm:px-4 md:px-8 bg-gradient-to-br from-travel-light via-white to-travel-beige transition-all duration-500">
-            <Navigation />
-            <main className="pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0 animate-fade-in">
-              <Explore />
-            </main>
-            <BottomNavigation />
-          </div>
-        </RequireAuth>
+        <ProtectedLayout><Explore /></ProtectedLayout>
       </Route>
-      
       <Route path="/swipe">
-        <RequireAuth>
-          <div className="min-h-screen max-w-7xl mx-auto px-2 sm:px-4 md:px-8 bg-gradient-to-br from-travel-light via-white to-travel-beige transition-all duration-500">
-            <Navigation />
-            <main className="pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0 animate-fade-in">
-              <Swipe />
-            </main>
-            <BottomNavigation />
-          </div>
-        </RequireAuth>
+        <ProtectedLayout><Swipe /></ProtectedLayout>
       </Route>
-      
       <Route path="/profile">
-        <RequireAuth>
-          <div className="min-h-screen max-w-7xl mx-auto px-2 sm:px-4 md:px-8 bg-gradient-to-br from-travel-light via-white to-travel-beige transition-all duration-500">
-            <Navigation />
-            <main className="pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0 animate-fade-in">
-              <Profile />
-            </main>
-            <BottomNavigation />
-          </div>
-        </RequireAuth>
+        <ProtectedLayout><Profile /></ProtectedLayout>
       </Route>
-      
+      <Route path="/profile-create">
+        <ProtectedLayout><ProfileCreatePage /></ProtectedLayout>
+      </Route>
       <Route path="/properties">
-        <RequireAuth>
-          <div className="min-h-screen max-w-7xl mx-auto px-2 sm:px-4 md:px-8 bg-gradient-to-br from-travel-light via-white to-travel-beige transition-all duration-500">
-            <Navigation />
-            <main className="pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0 animate-fade-in">
-              <Properties />
-            </main>
-            <BottomNavigation />
-          </div>
-        </RequireAuth>
+        <ProtectedLayout><Properties /></ProtectedLayout>
       </Route>
-      
       <Route path="/rides">
-        <RequireAuth>
-          <div className="min-h-screen max-w-7xl mx-auto px-2 sm:px-4 md:px-8 bg-gradient-to-br from-travel-light via-white to-travel-beige transition-all duration-500">
-            <Navigation />
-            <main className="pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0 animate-fade-in">
-              <Rides />
-            </main>
-            <BottomNavigation />
-          </div>
-        </RequireAuth>
+        <ProtectedLayout><Rides /></ProtectedLayout>
       </Route>
-      
       <Route path="/messages">
-        <RequireAuth>
-          <div className="min-h-screen max-w-7xl mx-auto px-2 sm:px-4 md:px-8 bg-gradient-to-br from-travel-light via-white to-travel-beige transition-all duration-500">
-            <Navigation />
-            <main className="pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0 animate-fade-in">
-              <Messages />
-            </main>
-            <BottomNavigation />
-          </div>
-        </RequireAuth>
+        <ProtectedLayout><Messages /></ProtectedLayout>
       </Route>
-
       <Route path="/groups">
-        <RequireAuth>
-          <div className="min-h-screen max-w-7xl mx-auto px-2 sm:px-4 md:px-8 bg-gradient-to-br from-travel-light via-white to-travel-beige transition-all duration-500">
-            <Navigation />
-            <main className="pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0 animate-fade-in">
-              <Groups />
-            </main>
-            <BottomNavigation />
-          </div>
-        </RequireAuth>
+        <ProtectedLayout><Groups /></ProtectedLayout>
       </Route>
-
       <Route path="/itinerary">
-        <RequireAuth>
-          <div className="min-h-screen max-w-7xl mx-auto px-2 sm:px-4 md:px-8 bg-gradient-to-br from-travel-light via-white to-travel-beige transition-all duration-500">
-            <Navigation />
-            <main className="pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0 animate-fade-in">
-              <Itinerary />
-            </main>
-            <BottomNavigation />
-          </div>
-        </RequireAuth>
+        <ProtectedLayout><Itinerary /></ProtectedLayout>
       </Route>
-
       <Route path="/tour-guides">
-        <RequireAuth>
-          <div className="min-h-screen max-w-7xl mx-auto px-2 sm:px-4 md:px-8 bg-gradient-to-br from-travel-light via-white to-travel-beige transition-all duration-500">
-            <Navigation />
-            <main className="pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0 animate-fade-in">
-              <TourGuides />
-            </main>
-            <BottomNavigation />
-          </div>
-        </RequireAuth>
+        <ProtectedLayout><TourGuides /></ProtectedLayout>
       </Route>
 
-      {/* Unified Dashboard */}
-      <Route path="/dashboard">
-        <RequireAuth>
-          <div className="min-h-screen max-w-7xl mx-auto px-2 sm:px-4 md:px-8 bg-gradient-to-br from-travel-light via-white to-travel-beige transition-all duration-500">
-            <Navigation />
-            <main className="pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0 animate-fade-in">
-              <DashboardSelector />
-            </main>
-            <BottomNavigation />
-          </div>
-        </RequireAuth>
-      </Route>
+      {/* --- Dashboards --- */}
       <Route path="/dashboard/property">
-        <RequireAuth>
-          <div className="min-h-screen max-w-7xl mx-auto px-2 sm:px-4 md:px-8 bg-gradient-to-br from-travel-light via-white to-travel-beige transition-all duration-500">
-            <Navigation />
-            <main className="pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0 animate-fade-in">
-              <OwnerDashboard type="property" />
-            </main>
-            <BottomNavigation />
-          </div>
-        </RequireAuth>
+        <ProtectedLayout><OwnerDashboard type="property" /></ProtectedLayout>
       </Route>
       <Route path="/dashboard/ride">
-        <RequireAuth>
-          <div className="min-h-screen max-w-7xl mx-auto px-2 sm:px-4 md:px-8 bg-gradient-to-br from-travel-light via-white to-travel-beige transition-all duration-500">
-            <Navigation />
-            <main className="pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0 animate-fade-in">
-              <OwnerDashboard type="ride" />
-            </main>
-            <BottomNavigation />
-          </div>
-        </RequireAuth>
+        <ProtectedLayout><OwnerDashboard type="ride" /></ProtectedLayout>
       </Route>
       <Route path="/dashboard/tour">
-        <RequireAuth>
-          <div className="min-h-screen max-w-7xl mx-auto px-2 sm:px-4 md:px-8 bg-gradient-to-br from-travel-light via-white to-travel-beige transition-all duration-500">
-            <Navigation />
-            <main className="pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0 animate-fade-in">
-              <OwnerDashboard type="tour" />
-            </main>
-            <BottomNavigation />
-          </div>
-        </RequireAuth>
+        <ProtectedLayout><OwnerDashboard type="tour" /></ProtectedLayout>
       </Route>
       <Route path="/dashboard/agency">
-        <RequireAuth>
-          <div className="min-h-screen max-w-7xl mx-auto px-2 sm:px-4 md:px-8 bg-gradient-to-br from-travel-light via-white to-travel-beige transition-all duration-500">
-            <Navigation />
-            <main className="pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0 animate-fade-in">
-              <OwnerDashboard type="agency" />
-            </main>
-            <BottomNavigation />
-          </div>
-        </RequireAuth>
+        <ProtectedLayout><OwnerDashboard type="agency" /></ProtectedLayout>
       </Route>
-
-      {/* Admin route remains for admin users; keep path but component will self-guard */}
-      <Route path="/admin" component={AdminDashboard} />
       
-      <Route path="/profile-create" component={ProfileCreatePage} />
+      {/* --- Admin Route --- */}
+      <Route path="/admin">
+        <ProtectedLayout><AdminDashboard /></ProtectedLayout>
+      </Route>
       
-      <Route component={NotFound} />
+      {/* 404 Not Found */}
+      <Route>
+        <NotFound />
+      </Route>
     </Switch>
   );
 }

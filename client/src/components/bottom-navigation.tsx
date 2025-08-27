@@ -1,52 +1,84 @@
 import { Link, useLocation } from "wouter";
-import { Heart, Home, Car, MessageCircle, Users, Compass } from "lucide-react";
-
-const navItems = [
-  { label: "Swipe", icon: Heart, href: "/swipe" },
-  { label: "Stays", icon: Home, href: "/properties" },
-  { label: "Rides", icon: Car, href: "/rides" },
-  { label: "Messages", icon: MessageCircle, href: "/messages" },
-  { label: "Groups", icon: Users, href: "/groups" },
-  { label: "Guides", icon: Compass, href: "/tour-guides" },
-];
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/lib/auth";
+import { Heart, User, Home, Car, MessageCircle, LogOut } from "lucide-react";
+import { useState } from "react";
 
 export default function BottomNavigation() {
   const [location] = useLocation();
+  const { user, signOut } = useAuth();
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
+
+  const navItems = [
+    { href: "/swipe", icon: <Heart className="w-6 h-6" />, label: "Swipe" },
+    { href: "/properties", icon: <Home className="w-6 h-6" />, label: "Stays" },
+    { href: "/rides", icon: <Car className="w-6 h-6" />, label: "Rides" },
+    {
+      href: "/messages",
+      icon: <MessageCircle className="w-6 h-6" />,
+      label: "Messages",
+    },
+    { href: "/profile", icon: <User className="w-6 h-6" />, label: "Profile" },
+  ];
+
+  const isActive = (path: string) => location.startsWith(path);
+
+  const handleLogout = () => {
+    signOut();
+    setIsLogoutConfirmOpen(false);
+  };
+
   return (
     <nav
-      className="fixed left-0 right-0 bottom-6 z-50 flex justify-center pointer-events-none"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t border-border/20"
       role="navigation"
-      aria-label="Main navigation"
+      aria-label="Mobile navigation"
     >
-      <div className="pointer-events-auto bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md shadow-2xl rounded-full px-2 py-2 flex justify-around items-center gap-1 max-w-2xl w-[96vw] border border-gray-200 dark:border-zinc-800 mx-auto mb-[env(safe-area-inset-bottom)]">
-        {navItems.map(({ label, icon: Icon, href }) => {
-          const active = location.startsWith(href);
-          return (
-            <Link key={label} href={href} aria-label={label} tabIndex={0}>
-              <button
-                className={`flex flex-col items-center min-h-[44px] min-w-[44px] text-xs sm:text-sm md:text-base px-3 py-1 rounded-full font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 relative
-                  ${active
-                    ? "bg-travel-mint/20 dark:bg-travel-mint/30 text-travel-primary shadow-md scale-105 animate-nav-pop"
-                    : "text-gray-600 dark:text-gray-200 hover:text-travel-primary hover:bg-travel-mint/10"
-                }`}
-                aria-current={active ? "page" : undefined}
-                style={{ transition: 'background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.2s' }}
-              >
-                <Icon className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 mb-0.5" />
-                {label}
-              </button>
-            </Link>
-          );
-        })}
+      <div className="flex justify-around items-center h-[calc(3.5rem+env(safe-area-inset-bottom))] pb-[env(safe-area-inset-bottom)]">
+        {navItems.map((item) => (
+          <Link key={item.href} href={item.href}>
+            <a
+              className={`flex flex-col items-center justify-center w-full h-full text-xs font-medium transition-colors ${
+                isActive(item.href)
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {item.icon}
+              <span className="mt-1">{item.label}</span>
+            </a>
+          </Link>
+        ))}
+        <button
+          onClick={() => setIsLogoutConfirmOpen(true)}
+          className="flex flex-col items-center justify-center w-full h-full text-xs font-medium transition-colors text-muted-foreground hover:text-destructive"
+        >
+          <LogOut className="w-6 h-6" />
+          <span className="mt-1">Logout</span>
+        </button>
       </div>
-      <style>{`
-        @keyframes nav-pop {
-          0% { transform: scale(1); opacity: 0.7; }
-          60% { transform: scale(1.12); opacity: 1; }
-          100% { transform: scale(1.05); opacity: 1; }
-        }
-        .animate-nav-pop { animation: nav-pop 0.25s; }
-      `}</style>
+
+      {isLogoutConfirmOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-background rounded-lg p-6 w-11/12 max-w-sm">
+            <h3 className="text-lg font-semibold">Log Out</h3>
+            <p className="text-sm text-muted-foreground mt-2 mb-4">
+              Are you sure you want to log out?
+            </p>
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setIsLogoutConfirmOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={handleLogout}>
+                Log Out
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }

@@ -14,10 +14,10 @@ import {
   ConfirmationResult,
   GoogleAuthProvider,
   signInWithPopup,
-  // Add to imports
   sendSignInLinkToEmail, 
   isSignInWithEmailLink,
-  signInWithEmailLink
+  signInWithEmailLink,
+  getAdditionalUserInfo
 } from "firebase/auth";
 
 import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
@@ -72,24 +72,9 @@ interface AuthContextType {
   confirmPhoneAuth: (confirmation: ConfirmationResult, code: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   sendEmailSignInLink: (email: string) => Promise<void>;
-  verifyEmailSignInLink: (email: string) => Promise<void>;
+  verifyEmailSignInLink: (email: string) => Promise<{ isNewUser: boolean } | undefined>;
+  redirectAfterLogin: (path: string) => void; 
 }
-
-const sendEmailSignInLink = async (email: string) => {
-  const actionCodeSettings = {
-    url: `${window.location.origin}/verify-email-link`,
-    handleCodeInApp: true
-  };
-  await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-  window.localStorage.setItem('emailForSignIn', email);
-};
-
-const verifyEmailSignInLink = async (email: string) => {
-  if (isSignInWithEmailLink(auth, window.location.href)) {
-    await signInWithEmailLink(auth, email, window.location.href);
-    window.localStorage.removeItem('emailForSignIn');
-  }
-};
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -97,40 +82,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [redirectPath, setRedirectPath] = useState<string | null>(null);
 
   // Listen to Firebase auth state changes
   useEffect(() => {
-    console.log('Setting up Firebase auth listener...');
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      console.log('Firebase auth state changed:', user ? `User ${user.uid} logged in` : 'No user');
       setFirebaseUser(user);
       setIsLoading(false);
     });
-
-    return () => {
-      console.log('Cleaning up Firebase auth listener...');
-      unsubscribe();
-    };
+    return () => unsubscribe();
   }, []);
 
   // Fetch user profile from Firestore
-  const { data: user, isLoading: isUserLoading, error: userError } = useQuery<User | null>({
+  const { data: user, isLoading: isUserLoading } = useQuery<User | null>({
     queryKey: ["user", firebaseUser?.uid],
     queryFn: async () => {
-      if (!firebaseUser?.uid) {
-        console.log('No firebase user, skipping profile fetch');
-        return null;
-      }
-      
-      console.log('Fetching user profile for:', firebaseUser.uid);
+      if (!firebaseUser?.uid) return null;
       const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
-      if (userDoc.exists()) {
-        const userData = userDoc.data() as User;
-        console.log('User profile found:', userData);
-        return userData;
-      }
-      console.log('No user profile found in Firestore');
-      return null;
+      return userDoc.exists() ? (userDoc.data() as User) : null;
     },
     enabled: !!firebaseUser?.uid,
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -140,14 +109,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     mutationFn: async ({ email, password, name }: { email: string; password: string; name: string }) => {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      
-      // Update display name
       await updateProfile(user, { displayName: name });
-      
-      // Send verification email
       await sendEmailVerification(user);
-      
-      // Create user profile in Firestore
       const userData: User = {
         id: user.uid,
         email: user.email!,
@@ -157,9 +120,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         emailVerified: false,
         profileComplete: false,
       };
-      
       await setDoc(doc(db, "users", user.uid), userData);
-      
+      // Automatically sign in the user after successful sign up
+      await signInWithEmailAndPassword(auth, email, password);
       return userData;
     },
     onSuccess: () => {
@@ -169,8 +132,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInMutation = useMutation({
     mutationFn: async ({ email, password }: { email: string; password: string }) => {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      return userCredential.user;
+      return await signInWithEmailAndPassword(auth, email, password);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user"] });
@@ -178,135 +140,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   });
 
   const signOutMutation = useMutation({
-    mutationFn: async () => {
-      await signOut(auth);
-    },
-    onSuccess: () => {
-      queryClient.clear();
-    },
-  });
-
-  const resetPasswordMutation = useMutation({
-    mutationFn: async (email: string) => {
-      await sendPasswordResetEmail(auth, email);
-    },
-  });
-
-  const sendVerificationEmailMutation = useMutation({
-    mutationFn: async () => {
-      if (!firebaseUser) throw new Error("No user logged in");
-      await sendEmailVerification(firebaseUser);
-    },
+    mutationFn: () => signOut(auth),
+    onSuccess: () => queryClient.clear(),
   });
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data: Partial<User>) => {
       if (!firebaseUser?.uid) throw new Error("No user logged in");
-      
       const userRef = doc(db, "users", firebaseUser.uid);
-      await updateDoc(userRef, {
-        ...data,
-        updatedAt: new Date().toISOString(),
-      });
+      await updateDoc(userRef, { ...data, updatedAt: new Date().toISOString() });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user"] });
     },
   });
-
-  const signUp = async (email: string, password: string, name: string) => {
-    await signUpMutation.mutateAsync({ email, password, name });
-  };
-
-  const signIn = async (email: string, password: string) => {
-    await signInMutation.mutateAsync({ email, password });
-  };
-
-  const signOut = async () => {
-    await signOutMutation.mutateAsync();
-  };
-
-  const resetPassword = async (email: string) => {
-    await resetPasswordMutation.mutateAsync(email);
-  };
-
-  const sendVerificationEmail = async () => {
-    await sendVerificationEmailMutation.mutateAsync();
-  };
-
-  const updateUserProfile = async (data: Partial<User>) => {
-    await updateProfileMutation.mutateAsync(data);
-  };
-
-  // Phone authentication helpers
-  const startPhoneAuth = async (
-    phoneNumber: string,
-    recaptchaContainerId: string,
-  ): Promise<ConfirmationResult> => {
-    // Ensure any previous verifier is cleared by recreating the container content
-    const container = document.getElementById(recaptchaContainerId);
-    if (!container) throw new Error("reCAPTCHA container not found");
-    container.innerHTML = "";
-
-    const verifier = new RecaptchaVerifier(auth, recaptchaContainerId, {
-      size: "invisible",
-    });
-
-    return await signInWithPhoneNumber(auth, phoneNumber, verifier);
-  };
-
-  const confirmPhoneAuth = async (
-    confirmation: ConfirmationResult,
-    code: string,
-  ): Promise<void> => {
-    const result = await confirmation.confirm(code);
-    const firebaseUserConfirmed = result.user;
-
-    // Ensure Firestore profile exists
-    if (firebaseUserConfirmed?.uid) {
-      const userRef = doc(db, "users", firebaseUserConfirmed.uid);
-      const snapshot = await getDoc(userRef);
-      if (!snapshot.exists()) {
-        const userData: User = {
-          id: firebaseUserConfirmed.uid,
-          email: firebaseUserConfirmed.email || "",
-          name: firebaseUserConfirmed.displayName || firebaseUserConfirmed.phoneNumber || "User",
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          emailVerified: !!firebaseUserConfirmed.emailVerified,
-          profileComplete: false,
-        };
-        await setDoc(userRef, userData);
-      }
-    }
-
-    // Refresh cached queries
-    queryClient.invalidateQueries({ queryKey: ["user"] });
-  };
-
-  const signInWithGoogle = async (): Promise<void> => {
-    const provider = new GoogleAuthProvider();
-    const result = await signInWithPopup(auth, provider);
-    const firebaseUserConfirmed = result.user;
-
-    if (firebaseUserConfirmed?.uid) {
-      const userRef = doc(db, "users", firebaseUserConfirmed.uid);
-      const snapshot = await getDoc(userRef);
-      if (!snapshot.exists()) {
-        const userData: User = {
-          id: firebaseUserConfirmed.uid,
-          email: firebaseUserConfirmed.email || "",
-          name: firebaseUserConfirmed.displayName || firebaseUserConfirmed.email || "User",
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          emailVerified: !!firebaseUserConfirmed.emailVerified,
-          profileComplete: false,
-        };
-        await setDoc(userRef, userData);
-      }
-    }
-
-    queryClient.invalidateQueries({ queryKey: ["user"] });
+  
+  const redirectAfterLogin = (path: string) => {
+    setRedirectPath(path);
   };
 
   return (
@@ -314,15 +164,82 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user: user ?? null, 
       firebaseUser,
       isLoading: isLoading || isUserLoading,
-      signUp,
-      signIn,
-      signOut,
-      resetPassword,
-      sendVerificationEmail,
-      updateUserProfile,
-      startPhoneAuth,
-      confirmPhoneAuth,
-      signInWithGoogle,
+      signUp: async (email, password, name) => {
+        await signUpMutation.mutateAsync({ email, password, name });
+      },
+      signIn: async (email, password) => {
+        await signInMutation.mutateAsync({ email, password });
+      },
+      signOut: () => signOutMutation.mutateAsync(),
+      resetPassword: (email) => sendPasswordResetEmail(auth, email),
+      sendVerificationEmail: () => {
+        if (!firebaseUser) throw new Error("No user to verify");
+        return sendEmailVerification(firebaseUser);
+      },
+      updateUserProfile: (data) => updateProfileMutation.mutateAsync(data),
+      startPhoneAuth: (phoneNumber, recaptchaContainerId) => {
+        const verifier = new RecaptchaVerifier(auth, recaptchaContainerId, { size: 'invisible' });
+        return signInWithPhoneNumber(auth, phoneNumber, verifier);
+      },
+      confirmPhoneAuth: async (confirmation, code) => {
+        const result = await confirmation.confirm(code);
+        if (result.user && !(await getDoc(doc(db, "users", result.user.uid))).exists()) {
+          const { uid, email, displayName, phoneNumber } = result.user;
+          const newUser: User = {
+            id: uid,
+            email: email || "",
+            name: displayName || phoneNumber || "User",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            emailVerified: !!email,
+            profileComplete: false,
+          };
+          await setDoc(doc(db, "users", uid), newUser);
+        }
+        queryClient.invalidateQueries({ queryKey: ["user"] });
+      },
+      signInWithGoogle: async () => {
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        if (result.user && !(await getDoc(doc(db, "users", result.user.uid))).exists()) {
+            const { uid, email, displayName } = result.user;
+            const newUser: User = {
+              id: uid,
+              email: email || "",
+              name: displayName || "Google User",
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              emailVerified: true,
+              profileComplete: false,
+            };
+            await setDoc(doc(db, "users", uid), newUser);
+        }
+        queryClient.invalidateQueries({ queryKey: ["user"] });
+      },
+      sendEmailSignInLink: async (email) => {
+        await sendSignInLinkToEmail(auth, email, { 
+          url: `${window.location.origin}/verify-email-link`,
+          handleCodeInApp: true 
+        });
+        window.localStorage.setItem('emailForSignIn', email);
+      },
+      verifyEmailSignInLink: async (email) => {
+        if (!isSignInWithEmailLink(auth, window.location.href)) return;
+        const result = await signInWithEmailLink(auth, email, window.location.href);
+        window.localStorage.removeItem('emailForSignIn');
+        if (getAdditionalUserInfo(result)?.isNewUser) {
+          const { uid, email, displayName } = result.user;
+          const newUser: User = {
+            id: uid, email: email!, name: displayName || "",
+            createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+            emailVerified: true, profileComplete: false
+          };
+          await setDoc(doc(db, "users", uid), newUser);
+          return { isNewUser: true };
+        }
+        return { isNewUser: false };
+      },
+      redirectAfterLogin
     }}>
       {children}
     </AuthContext.Provider>

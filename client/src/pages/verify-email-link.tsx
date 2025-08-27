@@ -10,7 +10,13 @@ export default function VerifyEmailLink() {
     const email = window.localStorage.getItem('emailForSignIn');
     if (email) {
       verifyEmailSignInLink(email)
-        .then(() => navigate('/'))
+        .then((result) => {
+          if (result?.isNewUser) {
+            navigate('/profile-create');
+          } else {
+            navigate('/explore');
+          }
+        })
         .catch(() => navigate('/login'));
     } else {
       navigate('/login');

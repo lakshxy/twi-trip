@@ -4,24 +4,18 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/auth";
 import { Heart, User, Home, Car, MessageCircle, LogOut, Users, Bell, Settings, Compass, MapPin } from "lucide-react";
 import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerDescription,
-  DrawerClose,
-  DrawerFooter,
-} from "@/components/ui/drawer";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
-import { useState, useEffect } from "react";
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import logo from "@/assets/twi logo.png";
-import { Avatar } from "@/components/ui/avatar";
 
 export default function Navigation() {
   const [location, setLocation] = useLocation();
-  const { user, logout } = useAuth();
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [acceptedIds, setAcceptedIds] = useState<number[]>([]);
   const [declinedIds, setDeclinedIds] = useState<number[]>([]);
   const [readIds, setReadIds] = useState<number[]>([]);
@@ -39,25 +33,8 @@ export default function Navigation() {
     { href: "/groups", label: "Groups", icon: <Users className="w-5 h-5" /> },
     { href: "/itinerary", label: "Itinerary", icon: <MapPin className="w-5 h-5" /> },
     { href: "/tour-guides", label: "Guides", icon: <Compass className="w-5 h-5" /> },
-    // Dashboard link - always visible for direct access
     { href: "/dashboard", label: "Dashboard", icon: <Settings className="w-5 h-5" /> },
-    // Comment out authentication-based conditional rendering
-    // ...(user?.roles?.includes('property') || user?.roles?.includes('ride') || user?.roles?.includes('tour') || user?.roles?.includes('agency') ? [
-    //   { href: "/owner", label: "Dashboard", icon: <Settings className="w-5 h-5" /> }
-    // ] : [])
   ];
-
-  // Add dashboard link if user has owner roles - COMMENTED OUT FOR DIRECT ACCESS
-  // const hasOwnerRole = user?.roles?.some(role => 
-  //   ['property', 'ride', 'tour', 'agency'].includes(role)
-  // );
-
-  // if (hasOwnerRole) {
-  //   navItems.push({ path: "/owner", icon: Settings, label: "Dashboard", id: "dashboard" });
-  // }
-
-  // Always show dashboard link for direct access
-  // navItems.push({ path: "/owner", icon: Settings, label: "Dashboard", id: "dashboard" });
 
   const notifications = [
     {
@@ -92,7 +69,6 @@ export default function Navigation() {
     return false;
   };
 
-  // Helper to go to messages for a user
   const handleContinueChat = (notif: any) => {
     setChatPrompt({ open: true, notif });
     setFirstMessage("");
@@ -102,8 +78,6 @@ export default function Navigation() {
     if (!chatPrompt.notif || !firstMessage.trim()) return;
     setSending(true);
     try {
-      // You may need to look up the userId by name in a real app. Here, assume notif has userId or map name to id.
-      // For demo, we'll use notif.userId or fallback to 2
       const receiverId = chatPrompt.notif.userId || 2;
       await fetch("/api/messages", {
         method: "POST",
@@ -239,20 +213,56 @@ export default function Navigation() {
                   )}
                 </Button>
               </Link>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={logout}
-                className="text-travel-navy/70 dark:text-red-400 hover:text-red-500 px-3 md:px-4 py-2 rounded-2xl transition-all duration-300"
-                aria-label="Logout"
-              >
-                <LogOut className="w-5 h-5 md:w-6 md:h-6" />
-              </Button>
+              <Popover open={isLogoutConfirmOpen} onOpenChange={setIsLogoutConfirmOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-travel-navy/70 dark:text-red-400 hover:text-red-500 px-3 md:px-4 py-2 rounded-2xl transition-all duration-300"
+                    aria-label="Logout"
+                  >
+                    <LogOut className="w-5 h-5 md:w-6 md:h-6" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full max-w-xs p-4 rounded-2xl shadow-2xl border-travel-lavender/20 bg-white dark:bg-zinc-900">
+                  <div className="text-center">
+                    <h3 className="text-lg font-semibold text-travel-navy">Log Out</h3>
+                    <p className="text-sm text-travel-navy/80 mt-2 mb-4">Are you sure you want to log out?</p>
+                    <div className="flex gap-2 justify-center">
+                      <Button variant="outline" size="sm" onClick={() => setIsLogoutConfirmOpen(false)}>Cancel</Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => {
+                          signOut();
+                          setIsLogoutConfirmOpen(false);
+                        }}
+                      >
+                        Log Out
+                      </Button>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
         </div>
       </nav>
-      {/* Remove mobile nav from here, will be a separate component */}
+
+      {/* Mobile Navigation */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-zinc-900 border-t border-travel-navy/10" role="navigation" aria-label="Mobile navigation">
+        <div className="flex justify-around items-center h-16">
+          {navItems.slice(0, 5).map(item => (
+            <Link key={item.href} href={item.href}>
+              <a className={`flex flex-col items-center justify-center w-full h-full text-xs font-medium transition-colors ${isActive(item.href) ? 'text-travel-primary' : 'text-travel-navy/70'}`}>
+                {item.icon}
+                <span className="mt-1">{item.label}</span>
+              </a>
+            </Link>
+          ))}
+        </div>
+      </nav>
+
       {/* Chat Prompt Modal */}
       {chatPrompt.open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">

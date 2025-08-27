@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Heart, X, Star, MapPin, Filter, Car } from "lucide-react";
 import SwipeCard from "@/components/swipe-card";
@@ -39,7 +38,6 @@ export default function SwipePage() {
     },
     onSuccess: (data) => {
       if (data.isMatch) {
-        // Find the matched profile
         const matched = profiles.find(p => p.userId === data.swipe.swipedId);
         if (matched) {
           setMatchedProfile(matched);
@@ -66,7 +64,6 @@ export default function SwipePage() {
     const currentProfile = profiles[currentIndex];
     if (!currentProfile) return;
 
-    // Regular swipe logic
     swipeMutation.mutate({
       swipedId: currentProfile.userId,
       action,
@@ -100,13 +97,13 @@ export default function SwipePage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 max-w-md mx-auto">
+      <div className="p-4 sm:p-6 max-w-md mx-auto">
         <div className="animate-pulse space-y-4">
-          <div className="h-96 bg-gray-200 rounded-3xl"></div>
-          <div className="flex justify-center space-x-8">
-            <div className="w-16 h-16 bg-gray-200 rounded-full"></div>
-            <div className="w-16 h-16 bg-gray-200 rounded-full"></div>
-            <div className="w-16 h-16 bg-gray-200 rounded-full"></div>
+          <div className="h-80 sm:h-96 bg-gray-200 rounded-3xl"></div>
+          <div className="flex justify-center space-x-6 sm:space-x-8">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gray-200 rounded-full"></div>
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gray-200 rounded-full"></div>
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gray-200 rounded-full"></div>
           </div>
         </div>
       </div>
@@ -115,11 +112,11 @@ export default function SwipePage() {
 
   if (!currentProfile) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] bg-gradient-to-br from-travel-light via-white to-travel-beige">
-        <div className="bg-white rounded-2xl shadow-lg p-10 flex flex-col items-center max-w-lg w-full border border-travel-lavender/30">
-          <h2 className="text-3xl font-bold text-travel-navy mb-4">No More Profiles</h2>
-          <p className="text-travel-navy/70 text-lg mb-6">You've seen all available travelers in your area. Check back later for new profiles!</p>
-          <Button onClick={() => queryClient.invalidateQueries({ queryKey: ["/api/swipe/profiles"] })} className="bg-gradient-primary text-white px-8 py-3 rounded-xl text-lg font-semibold shadow-md hover:bg-travel-navy/90 transition-all duration-300">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] bg-gradient-to-br from-travel-light via-white to-travel-beige px-4">
+        <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 flex flex-col items-center max-w-lg w-full border border-travel-lavender/30">
+          <h2 className="text-2xl sm:text-3xl font-bold text-travel-navy mb-3">No More Profiles</h2>
+          <p className="text-travel-navy/70 text-base sm:text-lg text-center mb-6">You've seen all available travelers in your area. Check back later for new profiles!</p>
+          <Button onClick={() => queryClient.invalidateQueries({ queryKey: ["/api/swipe/profiles"] })} className="bg-gradient-primary text-white px-6 py-3 rounded-xl text-md font-semibold shadow-md hover:bg-travel-navy/90 transition-all duration-300">
             Refresh
           </Button>
         </div>
@@ -128,21 +125,19 @@ export default function SwipePage() {
   }
 
   return (
-    <div className="p-8 max-w-3xl mx-auto animate-fade-in">
-      <div className="w-full flex justify-start mt-2 mb-4 px-4">
+    <div className="p-2 sm:p-4 max-w-3xl mx-auto animate-fade-in">
+      <div className="w-full flex justify-start mt-2 mb-4 px-2 sm:px-4">
         <BackButton />
       </div>
-      <div className="flex flex-col md:flex-row gap-8 items-start">
+      <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
         {/* Swipe Card Section */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-4 text-center mb-8 animate-slide-up">
-            <div className="flex-1">
-              <h2 className="text-3xl font-bold text-travel-navy mb-3">Discover Travelers</h2>
-              <p className="text-travel-navy/70 text-lg font-medium">Swipe right to connect, left to pass</p>
-            </div>
+        <div className="flex-1 min-w-0 w-full">
+          <div className="text-center mb-4 animate-slide-up">
+            <h2 className="text-2xl sm:text-3xl font-bold text-travel-navy mb-1">Discover Travelers</h2>
+            <p className="text-travel-navy/70 text-base sm:text-lg font-medium">Swipe right to connect, left to pass</p>
           </div>
           {/* Swipe Card */}
-          <div className="relative h-[500px] mb-10 animate-scale-in">
+          <div className="relative h-[400px] sm:h-[500px] mb-6 animate-scale-in">
             <SwipeCard
               profile={currentProfile}
               onSwipe={handleSwipe}
@@ -150,57 +145,57 @@ export default function SwipePage() {
             />
           </div>
           {/* Swipe Actions */}
-          <div className="flex justify-center space-x-8 mb-10 animate-slide-up">
+          <div className="flex justify-center space-x-4 mb-6 animate-slide-up">
             <Button
               onClick={() => handleSwipe("pass")}
               variant="outline"
               size="icon"
-              className="w-20 h-20 rounded-full border-2 border-travel-lavender text-travel-lavender hover:bg-travel-lavender/10 hover:border-travel-lavender hover:scale-110 transition-all duration-500 shadow-lg glass-card"
+              className="w-16 h-16 rounded-full border-2 border-travel-lavender text-travel-lavender hover:bg-travel-lavender/10 hover:border-travel-lavender hover:scale-110 transition-all duration-500 shadow-lg glass-card"
               disabled={swipeMutation.isPending}
             >
-              <X className="w-8 h-8" />
+              <X className="w-7 h-7" />
             </Button>
             <Button
               onClick={() => handleSwipe("super")}
               variant="outline"
               size="icon"
-              className="w-20 h-20 rounded-full border-2 border-travel-mint bg-gradient-to-br from-travel-mint to-travel-lavender text-white hover:scale-110 transition-all duration-500 shadow-lg"
+              className="w-16 h-16 rounded-full border-2 border-travel-mint bg-gradient-to-br from-travel-mint to-travel-lavender text-white hover:scale-110 transition-all duration-500 shadow-lg"
               disabled={swipeMutation.isPending}
             >
-              <Star className="w-8 h-8" />
+              <Star className="w-7 h-7" />
             </Button>
             <Button
               onClick={() => handleSwipe("like")}
               size="icon"
-              className="w-20 h-20 rounded-full bg-gradient-primary hover:scale-110 transition-all duration-500 shadow-lg"
+              className="w-16 h-16 rounded-full bg-gradient-primary hover:scale-110 transition-all duration-500 shadow-lg"
               disabled={swipeMutation.isPending}
             >
-              <Heart className="w-8 h-8" />
+              <Heart className="w-7 h-7" />
             </Button>
           </div>
         </div>
         {/* Quick Filters Section */}
-        <div className="w-full md:w-[320px] flex-shrink-0 md:mt-32">
+        <div className="w-full lg:w-[300px] flex-shrink-0">
           <Card className="modern-card border-0 animate-slide-up bg-white/90">
-            <CardContent className="p-6">
-              <h4 className="font-bold text-travel-navy mb-4 flex items-center text-lg">
-                <Filter className="w-5 h-5 mr-3 text-travel-lavender" />
+            <CardContent className="p-4">
+              <h4 className="font-bold text-travel-navy mb-3 flex items-center text-md">
+                <Filter className="w-5 h-5 mr-2 text-travel-lavender" />
                 Quick Filters
               </h4>
-              <div className="grid grid-cols-2 gap-4">
-                <Button variant="outline" size="sm" className="justify-start py-3 px-4 rounded-xl border-travel-navy/20 text-travel-navy font-medium">
+              <div className="grid grid-cols-2 gap-3">
+                <Button variant="outline" size="sm" className="justify-start py-2 px-3 rounded-lg border-travel-navy/20 text-travel-navy font-medium text-sm">
                   <MapPin className="w-4 h-4 mr-2" />
                   Nearby
                 </Button>
-                <Button variant="outline" size="sm" className="justify-start py-3 px-4 rounded-xl border-travel-navy/20 text-travel-navy font-medium">
+                <Button variant="outline" size="sm" className="justify-start py-2 px-3 rounded-lg border-travel-navy/20 text-travel-navy font-medium text-sm">
                   <Heart className="w-4 h-4 mr-2" />
                   Homestays
                 </Button>
-                <Button variant="outline" size="sm" className="justify-start py-3 px-4 rounded-xl border-travel-navy/20 text-travel-navy font-medium">
+                <Button variant="outline" size="sm" className="justify-start py-2 px-3 rounded-lg border-travel-navy/20 text-travel-navy font-medium text-sm">
                   <Car className="w-4 h-4 mr-2" />
                   Rides
                 </Button>
-                <Button variant="outline" size="sm" className="justify-start py-3 px-4 rounded-xl border-travel-navy/20 text-travel-navy font-medium">
+                <Button variant="outline" size="sm" className="justify-start py-2 px-3 rounded-lg border-travel-navy/20 text-travel-navy font-medium text-sm">
                   📅 This Week
                 </Button>
               </div>
