@@ -4,120 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { MapPin, Clock, Star, Camera, Utensils, Mountain, Building, Search, Filter } from "lucide-react";
+import { destinations } from "@/lib/destinations";
+import { BackButton } from "@/components/back-button";
 
 export default function ItineraryPage() {
   const [selectedCity, setSelectedCity] = useState("bali");
-
-  const destinations = {
-    bali: {
-      name: "Bali, Indonesia",
-      popularPlaces: [
-        {
-          name: "Tanah Lot Temple",
-          type: "Cultural",
-          rating: 4.6,
-          duration: "2-3 hours",
-          bestTime: "Sunset",
-          description: "Ancient Hindu temple perched on a rock formation in the sea",
-          image: "https://images.unsplash.com/photo-1537953773345-d172ccf13cf1?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250"
-        },
-        {
-          name: "Ubud Rice Terraces",
-          type: "Nature",
-          rating: 4.8,
-          duration: "3-4 hours",
-          bestTime: "Morning",
-          description: "Stunning green rice paddies with scenic walking paths",
-          image: "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250"
-        },
-        {
-          name: "Kuta Beach",
-          type: "Beach",
-          rating: 4.3,
-          duration: "Half day",
-          bestTime: "All day",
-          description: "Famous surf beach with vibrant nightlife and restaurants",
-          image: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250"
-        }
-      ],
-      itineraries: [
-        {
-          day: 1,
-          title: "Cultural Immersion",
-          activities: [
-            { time: "8:00 AM", activity: "Traditional Balinese breakfast", location: "Ubud Market", icon: Utensils },
-            { time: "10:00 AM", activity: "Monkey Forest Sanctuary visit", location: "Sacred Monkey Forest", icon: Mountain },
-            { time: "2:00 PM", activity: "Silver jewelry workshop", location: "Celuk Village", icon: Building },
-            { time: "6:00 PM", activity: "Sunset at Tanah Lot Temple", location: "Tanah Lot", icon: Camera }
-          ]
-        },
-        {
-          day: 2,
-          title: "Nature & Adventure",
-          activities: [
-            { time: "5:00 AM", activity: "Mount Batur sunrise trek", location: "Mount Batur", icon: Mountain },
-            { time: "11:00 AM", activity: "Hot springs relaxation", location: "Toya Devasya", icon: Mountain },
-            { time: "3:00 PM", activity: "Coffee plantation tour", location: "Luwak Coffee Farm", icon: Utensils },
-            { time: "7:00 PM", activity: "Traditional Kecak dance", location: "Ubud Palace", icon: Building }
-          ]
-        },
-        {
-          day: 3,
-          title: "Beach & Relaxation",
-          activities: [
-            { time: "9:00 AM", activity: "Surfing lessons", location: "Kuta Beach", icon: Mountain },
-            { time: "1:00 PM", activity: "Beachside lunch", location: "Jimbaran Bay", icon: Utensils },
-            { time: "4:00 PM", activity: "Spa and massage", location: "Seminyak Spa", icon: Building },
-            { time: "7:00 PM", activity: "Seafood dinner on beach", location: "Jimbaran Beach", icon: Utensils }
-          ]
-        }
-      ]
-    },
-    tokyo: {
-      name: "Tokyo, Japan",
-      popularPlaces: [
-        {
-          name: "Senso-ji Temple",
-          type: "Cultural",
-          rating: 4.7,
-          duration: "2 hours",
-          bestTime: "Morning",
-          description: "Tokyo's oldest temple with traditional shopping street",
-          image: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250"
-        },
-        {
-          name: "Shibuya Crossing",
-          type: "Urban",
-          rating: 4.5,
-          duration: "1 hour",
-          bestTime: "Evening",
-          description: "World's busiest pedestrian crossing and neon lights",
-          image: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250"
-        },
-        {
-          name: "Tsukiji Outer Market",
-          type: "Food",
-          rating: 4.8,
-          duration: "3 hours",
-          bestTime: "Early morning",
-          description: "Fresh sushi and traditional Japanese street food",
-          image: "https://images.unsplash.com/photo-1613395877344-13d4a8e0d49e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250"
-        }
-      ],
-      itineraries: [
-        {
-          day: 1,
-          title: "Traditional Tokyo",
-          activities: [
-            { time: "8:00 AM", activity: "Sushi breakfast", location: "Tsukiji Market", icon: Utensils },
-            { time: "10:00 AM", activity: "Temple visit", location: "Senso-ji Temple", icon: Building },
-            { time: "2:00 PM", activity: "Traditional garden", location: "Imperial Palace Gardens", icon: Mountain },
-            { time: "6:00 PM", activity: "Kaiseki dinner", location: "Ginza", icon: Utensils }
-          ]
-        }
-      ]
-    }
-  };
 
   const cities = [
     { id: "bali", name: "Bali", country: "Indonesia" },
@@ -142,6 +33,9 @@ export default function ItineraryPage() {
   return (
     <div className="p-8">
       <div className="max-w-6xl mx-auto">
+        <div className="w-full flex justify-start mt-2 mb-4 px-4">
+          <BackButton />
+        </div>
         <div className="text-center mb-12 animate-fade-in">
           <h1 className="text-4xl font-bold text-travel-navy mb-4">Travel Itinerary Guide</h1>
           <p className="text-xl text-travel-navy/70 max-w-3xl mx-auto">
@@ -217,44 +111,6 @@ export default function ItineraryPage() {
                     </div>
                     <span>Best: {place.bestTime}</span>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-
-        {/* Sample Itineraries */}
-        <div>
-          <h2 className="text-2xl font-bold text-travel-navy mb-6">Sample Itineraries for {currentDestination.name}</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {currentDestination.itineraries.map((itinerary) => (
-              <Card key={itinerary.day} className="modern-card border-0 animate-slide-up">
-                <CardHeader className="pb-4">
-                  <CardTitle className="flex items-center justify-between">
-                    <span className="text-travel-navy">Day {itinerary.day}</span>
-                    <Badge className="bg-travel-mint/20 text-travel-mint border-0">
-                      {itinerary.title}
-                    </Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {itinerary.activities.map((activity, index) => {
-                    const Icon = activity.icon;
-                    return (
-                      <div key={index} className="flex items-start space-x-3 p-3 rounded-xl bg-travel-light/50">
-                        <div className="flex items-center justify-center w-8 h-8 bg-gradient-primary rounded-full flex-shrink-0">
-                          <Icon className="w-4 h-4 text-white" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-sm font-semibold text-travel-navy">{activity.time}</span>
-                          </div>
-                          <p className="text-sm text-travel-navy font-medium">{activity.activity}</p>
-                          <p className="text-xs text-travel-navy/60">{activity.location}</p>
-                        </div>
-                      </div>
-                    );
-                  })}
                 </CardContent>
               </Card>
             ))}

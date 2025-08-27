@@ -4,6 +4,23 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Full-screen layout adjustments */
+body {
+  margin: 0; /* Remove default margin */
+  padding: 0; /* Remove default padding */
+  overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+/* Remove separator lines */
+.separator {
+  display: none; /* Hide separator lines */
+}
+
+/* Remove separator lines */
+.separator {
+  display: none; /* Hide separator lines */
+}
+
 :root {
   /* Elegant color palette */
   --background: hsl(215, 25%, 97%);
@@ -151,6 +168,28 @@
   .swipe-right {
     animation: swipeRight 0.6s ease-in-out forwards;
   }
+  
+  /* Line clamp utilities */
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+  
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+  
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
 }
 
 /* Modern animations */
@@ -251,3 +290,31 @@
 .bg-rose-600 { background-color: var(--rose-600); }
 .text-rose-500 { color: var(--rose-500); }
 .text-rose-600 { color: var(--rose-600); }
+
+html {
+  @apply bg-white text-travel-navy transition-colors duration-300;
+}
+
+html.dark {
+  @apply bg-zinc-900 text-white transition-colors duration-300;
+}
+
+body {
+  min-height: 100vh;
+  @apply bg-white dark:bg-zinc-900 text-travel-navy dark:text-white transition-colors duration-300;
+}
+
+/* Safe area insets for bottom nav and content */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Card and nav backgrounds for dark mode */
+.card, .glass-card {
+  @apply bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md shadow-lg rounded-2xl;
+}
+
+/* Smooth transitions for all color changes */
+* {
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}

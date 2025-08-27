@@ -1,9 +1,33 @@
+import 'dotenv/config';
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
+import cors from "cors";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { db } from './db';
+import { collection, addDoc, getDocs } from 'firebase/firestore';
 
 const app = express();
+// CORS setup for frontend on http://localhost:3000 and Firebase hosting
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://twi-trip.web.app',
+  'https://twi-trip.firebaseapp.com'
+];
+
+app.use(cors({
+  origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -15,7 +39,8 @@ app.use(session({
   cookie: {
     secure: false, // Set to true in production with HTTPS
     httpOnly: true,
-    maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
+    sameSite: 'lax',
   }
 }));
 
@@ -75,9 +100,33 @@ app.use((req, res, next) => {
   const port = 5000;
   server.listen({
     port,
-    host: "0.0.0.0",
-    reusePort: true,
+    host: "localhost",
   }, () => {
     log(`serving on port ${port}`);
   });
 })();
+
+// Create user
+app.post('/users', async (req, res) => {
+  try {
+    const docRef = await addDoc(collection(db, 'users'), {
+      name: req.body.name,
+      email: req.body.email,
+      createdAt: new Date().toISOString()
+    });
+    res.status(201).json({ id: docRef.id });
+  } catch (error) {
+    res.status(500).json({ error: 'User creation failed' });
+  }
+});
+
+// Get all users
+app.get('/users', async (req, res) => {
+  try {
+    const snapshot = await getDocs(collection(db, 'users'));
+    const users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});

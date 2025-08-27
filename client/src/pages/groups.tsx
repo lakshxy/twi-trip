@@ -1,9 +1,36 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Users, MapPin, Calendar, Star, Clock, Globe } from "lucide-react";
+import { Users, MapPin, Star, Clock, Globe } from "lucide-react";
+import { BackButton } from "@/components/back-button";
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useState } from "react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { format, differenceInCalendarDays } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { DateRange } from "react-day-picker";
 
 export default function GroupsPage() {
+  const [search, setSearch] = useState("");
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({
+    title: "",
+    agency: "",
+    destination: "",
+    dates: "",
+    duration: "",
+    price: "",
+    totalSpots: "",
+    difficulty: "Easy",
+    description: "",
+    includes: "",
+    image: ""
+  });
+  const [selectedRange, setSelectedRange] = useState<DateRange | undefined>(undefined);
+
   const groupTrips = [
     {
       id: 1,
@@ -67,6 +94,10 @@ export default function GroupsPage() {
     }
   ];
 
+  const filteredTrips = groupTrips.filter(trip =>
+    trip.destination.toLowerCase().includes(search.toLowerCase())
+  );
+
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case 'Easy': return 'bg-travel-mint/20 text-travel-mint';
@@ -76,9 +107,42 @@ export default function GroupsPage() {
     }
   };
 
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Organised Trip:", { ...form, dates: selectedRange?.from ? format(selectedRange.from, 'PPP') + ' - ' + format(selectedRange.to, 'PPP') : '' });
+    setOpen(false);
+    setForm({
+      title: "",
+      agency: "",
+      destination: "",
+      dates: "",
+      duration: "",
+      price: "",
+      totalSpots: "",
+      difficulty: "Easy",
+      description: "",
+      includes: "",
+      image: ""
+    });
+  };
+
+  function isValidDate(date: unknown): date is Date {
+    return date instanceof Date && !isNaN(date.getTime());
+  }
+
+  const from = selectedRange?.from;
+  const to = selectedRange?.to;
+
   return (
     <div className="p-8">
       <div className="max-w-6xl mx-auto">
+        <div className="w-full flex justify-start mt-2 mb-4 px-4">
+          <BackButton />
+        </div>
         <div className="text-center mb-12 animate-fade-in">
           <h1 className="text-4xl font-bold text-travel-navy mb-4">Group Travel Finder</h1>
           <p className="text-xl text-travel-navy/70 max-w-3xl mx-auto">
@@ -86,8 +150,86 @@ export default function GroupsPage() {
           </p>
         </div>
 
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+          <div className="flex-1">
+            <Input
+              placeholder="Search by destination/location..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="max-w-xs"
+            />
+          </div>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-gradient-primary text-white rounded-xl font-semibold" onClick={() => setOpen(true)}>
+                Organise a Group Trip
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Organise a Group Trip</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleFormSubmit} className="space-y-4">
+                <Input name="title" placeholder="Trip Title" value={form.title} onChange={handleFormChange} required />
+                <Input name="agency" placeholder="Organiser Name/Agency" value={form.agency} onChange={handleFormChange} required />
+                <Input name="destination" placeholder="Destination" value={form.destination} onChange={handleFormChange} required />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm text-left"
+                    >
+                      {from && to && isValidDate(from) && isValidDate(to) ? (
+                        `${format(from as Date, 'PPP')} - ${format(to as Date, 'PPP')}`
+                      ) : (
+                        <span className="text-muted-foreground">Select a date range</span>
+                      )}
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent align="start">
+                    <Calendar
+                      mode="range"
+                      selected={selectedRange}
+                      onSelect={(range) => {
+                        setSelectedRange(range);
+                        if (range && range.from && range.to) {
+                          const days = differenceInCalendarDays(range.to, range.from) + 1;
+                          const nights = days - 1;
+                          setForm(f => ({ ...f, duration: days > 0 ? `${days}D/${nights}N` : "" }));
+                        }
+                      }}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <Input
+                  name="duration"
+                  placeholder="Duration (e.g. 7 days)"
+                  value={form.duration}
+                  onChange={handleFormChange}
+                  required
+                  readOnly={!!(selectedRange && selectedRange.from && selectedRange.to)}
+                />
+                <Input name="price" placeholder="Price per person (e.g. $899)" value={form.price} onChange={handleFormChange} required />
+                <Input name="totalSpots" placeholder="Total spots" value={form.totalSpots} onChange={handleFormChange} required type="number" min="1" />
+                <select name="difficulty" value={form.difficulty} onChange={handleFormChange} className="w-full border rounded-md p-2">
+                  <option value="Easy">Easy</option>
+                  <option value="Moderate">Moderate</option>
+                  <option value="Challenging">Challenging</option>
+                </select>
+                <Textarea name="description" placeholder="Description" value={form.description} onChange={handleFormChange} required />
+                <Input name="includes" placeholder="What's included (comma separated)" value={form.includes} onChange={handleFormChange} required />
+                <Input name="image" placeholder="Image URL" value={form.image} onChange={handleFormChange} required />
+                <DialogFooter>
+                  <Button type="submit" className="bg-gradient-primary text-white rounded-xl font-semibold w-full">Post Trip</Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {groupTrips.map((trip) => (
+          {filteredTrips.map((trip) => (
             <Card key={trip.id} className="modern-card border-0 overflow-hidden animate-slide-up">
               <div className="relative">
                 <img 
@@ -126,7 +268,7 @@ export default function GroupsPage() {
                     <span className="text-sm font-medium">{trip.destination}</span>
                   </div>
                   <div className="flex items-center text-travel-navy/70">
-                    <Calendar className="w-4 h-4 mr-2" />
+                    <CalendarIcon className="w-4 h-4 mr-2" />
                     <span className="text-sm font-medium">{trip.dates}</span>
                   </div>
                   <div className="flex items-center text-travel-navy/70">

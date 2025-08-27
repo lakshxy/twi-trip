@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { MapPin, Camera, Star, User, Home, Car } from "lucide-react";
 import type { Profile, User as UserType } from "@shared/schema";
+import { BackButton } from "@/components/back-button";
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -18,11 +19,14 @@ export default function ProfilePage() {
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
 
-  const { data: profile, isLoading } = useQuery<Profile & { user: UserType }>({
+  const { data: profileRaw, isLoading } = useQuery<Profile & { user: UserType }>({
     queryKey: ["/api/profile"],
   });
 
+  const profile = profileRaw;
+
   const [formData, setFormData] = useState({
+    name: "",
     bio: "",
     city: "",
     state: "",
@@ -50,6 +54,7 @@ export default function ProfilePage() {
   const handleEdit = () => {
     if (profile) {
       setFormData({
+        name: user?.name || "",
         bio: profile.bio || "",
         city: profile.city || "",
         state: profile.state || "",
@@ -88,22 +93,32 @@ export default function ProfilePage() {
     );
   }
 
-  const placeholderImages = [
-    "https://images.unsplash.com/photo-1564507592333-c60657eea523?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=300",
-    "https://images.unsplash.com/photo-1583395865554-58296a044a3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=300",
-  ];
-
   const profileImages = [
     "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=150&h=150",
     "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=150&h=150",
     "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=150&h=150",
   ];
 
-  const coverImage = placeholderImages[(user?.id || 0) % placeholderImages.length];
-  const avatarImage = profile?.profileImage || profileImages[(user?.id || 0) % profileImages.length];
+  const coverImage = profileImages[(user?.id || 0) % profileImages.length];
+  const avatarImage = ('profileImage' in profile! && profile!.profileImage)
+    ? profile!.profileImage
+    : profileImages[(user?.id || 0) % profileImages.length];
+
+  if (!profile) {
+    return (
+      <div className="p-6 max-w-2xl mx-auto text-center text-gray-500">
+        <h2 className="text-2xl font-bold mb-4">No profile found</h2>
+        <p>You haven't set up your profile yet. Click <b>Edit Profile</b> to get started!</p>
+        <Button onClick={handleEdit} className="mt-4 bg-travel-navy text-white">Edit Profile</Button>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 max-w-2xl mx-auto">
+      <div className="w-full flex justify-start mt-2 mb-4 px-4">
+        <BackButton />
+      </div>
       <Card className="overflow-hidden">
         {/* Profile Header */}
         <div className="relative">
@@ -164,7 +179,7 @@ export default function ProfilePage() {
             <Button
               onClick={isEditing ? handleSave : handleEdit}
               disabled={updateProfileMutation.isPending}
-              className="bg-travel-primary hover:bg-red-500"
+              className="bg-travel-navy hover:bg-travel-primary text-white"
             >
               {isEditing ? "Save Profile" : "Edit Profile"}
             </Button>
@@ -172,6 +187,20 @@ export default function ProfilePage() {
 
           {isEditing ? (
             <div className="space-y-6">
+              {/* Name Section */}
+              <div>
+                <Label htmlFor="name" className="text-sm font-semibold text-travel-dark">
+                  Full Name
+                </Label>
+                <Input
+                  id="name"
+                  placeholder="Enter your full name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="mt-2"
+                />
+              </div>
+
               {/* Bio Section */}
               <div>
                 <Label htmlFor="bio" className="text-sm font-semibold text-travel-dark">
@@ -283,7 +312,7 @@ export default function ProfilePage() {
                 <Button
                   onClick={handleSave}
                   disabled={updateProfileMutation.isPending}
-                  className="flex-1 bg-travel-primary hover:bg-red-500"
+                  className="flex-1 bg-travel-navy hover:bg-travel-primary text-white"
                 >
                   {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
                 </Button>
@@ -296,6 +325,75 @@ export default function ProfilePage() {
                 <div>
                   <h3 className="font-semibold text-travel-dark mb-3">About Me</h3>
                   <p className="text-gray-600 leading-relaxed">{profile.bio}</p>
+                </div>
+              )}
+
+              {/* Roles & Purposes */}
+              {(profile?.roles && profile.roles.length > 0) && (
+                <div>
+                  <h3 className="font-semibold text-travel-dark mb-3">Roles</h3>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {profile.roles.map((role, idx) => (
+                      <Badge key={idx} className="bg-travel-mint/20 text-travel-navy border-travel-mint/40">{role}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {(profile?.purposes && profile.purposes.length > 0) && (
+                <div>
+                  <h3 className="font-semibold text-travel-dark mb-3">Purposes</h3>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {profile.purposes.map((purpose, idx) => (
+                      <Badge key={idx} className="bg-travel-lavender/20 text-travel-navy border-travel-lavender/40">{purpose}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {profile?.frequency && (
+                <div>
+                  <h3 className="font-semibold text-travel-dark mb-3">Travel Frequency</h3>
+                  <Badge className="bg-travel-primary/10 text-travel-primary border-0">{profile.frequency}</Badge>
+                </div>
+              )}
+              {profile?.hosting && (
+                <div>
+                  <h3 className="font-semibold text-travel-dark mb-3">Hosting Availability</h3>
+                  <Badge className="bg-travel-primary/10 text-travel-primary border-0">{profile.hosting}</Badge>
+                </div>
+              )}
+
+              {/* Host/Traveler Details */}
+              {(profile?.stayType || profile?.stayCost || profile?.maxGuests || (profile?.amenities && profile.amenities.length > 0)) && (
+                <div>
+                  <h3 className="font-semibold text-travel-dark mb-3">Host Details</h3>
+                  {profile.stayType && <div><b>Type of Stay:</b> {profile.stayType}</div>}
+                  {profile.stayCost && <div><b>Stay is:</b> {profile.stayCost}</div>}
+                  {profile.maxGuests && <div><b>Max Guests:</b> {profile.maxGuests}</div>}
+                  {profile.amenities && profile.amenities.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {profile.amenities.map((a, idx) => (
+                        <Badge key={idx} className="bg-travel-mint/10 text-travel-navy border-0">{a}</Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+              {(profile?.nextDest || profile?.arrival || profile?.duration) && (
+                <div>
+                  <h3 className="font-semibold text-travel-dark mb-3">Upcoming Travel</h3>
+                  {profile.nextDest && <div><b>Next Destination:</b> {profile.nextDest}</div>}
+                  {profile.arrival && <div><b>Arrival:</b> {profile.arrival}</div>}
+                  {profile.duration && <div><b>Duration:</b> {profile.duration}</div>}
+                </div>
+              )}
+              {profile?.lookingFor && profile.lookingFor.length > 0 && (
+                <div>
+                  <h3 className="font-semibold text-travel-dark mb-3">What I'm Looking For</h3>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {profile.lookingFor.map((item, idx) => (
+                      <Badge key={idx} className="bg-travel-mint/20 text-travel-navy border-travel-mint/40">{item}</Badge>
+                    ))}
+                  </div>
                 </div>
               )}
 
@@ -345,11 +443,33 @@ export default function ProfilePage() {
                 </div>
               )}
 
+              {/* Connect With & Communication */}
+              {profile?.connectWith && profile.connectWith.length > 0 && (
+                <div>
+                  <h3 className="font-semibold text-travel-dark mb-3">Who I Want to Connect With</h3>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {profile.connectWith.map((item, idx) => (
+                      <Badge key={idx} className="bg-travel-mint/20 text-travel-navy border-travel-mint/40">{item}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {profile?.comms && profile.comms.length > 0 && (
+                <div>
+                  <h3 className="font-semibold text-travel-dark mb-3">Preferred Communication</h3>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {profile.comms.map((item, idx) => (
+                      <Badge key={idx} className="bg-travel-lavender/20 text-travel-navy border-travel-lavender/40">{item}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {(!profile?.bio && (!profile?.interests || profile.interests.length === 0)) && (
                 <div className="text-center py-8">
                   <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-500 mb-4">Your profile is looking a bit empty!</p>
-                  <Button onClick={handleEdit} className="bg-travel-primary hover:bg-red-500">
+                  <Button onClick={handleEdit} className="bg-travel-navy hover:bg-travel-primary text-white">
                     Complete Your Profile
                   </Button>
                 </div>
@@ -363,7 +483,7 @@ export default function ProfilePage() {
       <div className="grid grid-cols-2 gap-4 mt-6">
         <Button
           variant="outline"
-          className="py-3 border-travel-secondary text-travel-secondary hover:bg-travel-secondary hover:text-white"
+          className="py-3 border-travel-navy text-travel-navy hover:bg-travel-navy hover:text-white"
           onClick={() => window.location.href = "/properties"}
         >
           <Home className="w-4 h-4 mr-2" />
@@ -371,7 +491,7 @@ export default function ProfilePage() {
         </Button>
         <Button
           variant="outline"
-          className="py-3 border-travel-accent text-travel-accent hover:bg-travel-accent hover:text-white"
+          className="py-3 border-travel-navy text-travel-navy hover:bg-travel-navy hover:text-white"
           onClick={() => window.location.href = "/rides"}
         >
           <Car className="w-4 h-4 mr-2" />

@@ -1,15 +1,17 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Star } from "lucide-react";
+import { MapPin, Star, Calendar, CreditCard } from "lucide-react";
 import type { Property, User } from "@shared/schema";
 
 interface PropertyCardProps {
   property: Property & { host: User };
   onShowInterest: (propertyId: number) => void;
+  onBookStay?: (property: Property & { host: User }) => void;
   isLoading: boolean;
+  messageHost?: () => void;
 }
 
-export default function PropertyCard({ property, onShowInterest, isLoading }: PropertyCardProps) {
+export default function PropertyCard({ property, onShowInterest, onBookStay, isLoading, messageHost }: PropertyCardProps) {
   const propertyImages = [
     "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=250",
     "https://images.unsplash.com/photo-1564507592333-c60657eea523?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=250",
@@ -48,20 +50,36 @@ export default function PropertyCard({ property, onShowInterest, isLoading }: Pr
           </p>
         )}
         
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-3 gap-2">
           <div>
             <span className="text-lg font-bold text-travel-dark">
               ₹{Number(property.pricePerNight).toLocaleString()}
             </span>
             <span className="text-sm text-gray-600">/night</span>
           </div>
+        </div>
+        
+        <div className="flex flex-col gap-2 mb-3">
+          {onBookStay && (
+            <Button
+              onClick={() => onBookStay(property)}
+              disabled={isLoading}
+              size="sm"
+              className="bg-travel-dark text-white hover:bg-travel-dark/90 min-w-full border border-travel-dark shadow-md font-semibold"
+            >
+              <Calendar className="w-4 h-4 mr-2" />
+              Book Stay
+            </Button>
+          )}
+          
           <Button
-            onClick={() => onShowInterest(property.id)}
-            disabled={isLoading}
+            onClick={onShowInterest ? () => onShowInterest(property.id) : undefined}
+            disabled={!onShowInterest || isLoading}
             size="sm"
-            className="bg-travel-secondary hover:bg-teal-500 text-white"
+            variant="outline"
+            className="border-travel-mint text-travel-mint hover:bg-travel-mint/10 min-w-full shadow-md font-semibold"
           >
-            Show Interest
+            Request to Join Stay
           </Button>
         </div>
         
@@ -72,7 +90,7 @@ export default function PropertyCard({ property, onShowInterest, isLoading }: Pr
               <span className="text-sm font-medium">
                 {Number(property.rating).toFixed(1)}
               </span>
-              {property.reviewCount > 0 && (
+              {(property.reviewCount ?? 0) > 0 && (
                 <span className="text-sm text-gray-600 ml-1">
                   ({property.reviewCount} review{property.reviewCount !== 1 ? 's' : ''})
                 </span>

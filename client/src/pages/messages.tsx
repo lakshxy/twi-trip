@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient, QueryFunction } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Send } from "lucide-react";
 import { format } from "date-fns";
 import type { Message, User } from "@shared/schema";
+import { useAuth } from "@/lib/auth";
+import { BackButton } from "@/components/back-button";
 
 interface Conversation {
   user: User;
@@ -21,15 +23,35 @@ export default function MessagesPage() {
   const queryClient = useQueryClient();
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [messageInput, setMessageInput] = useState("");
+  const { user, isLoading } = useAuth();
+  const search = window.location.search;
+  const params = new URLSearchParams(search);
+  const initialUserId = params.get("userId");
+  const [activeTab, setActiveTab] = useState<'personal' | 'groups'>('personal');
 
-  const { data: conversations = [], isLoading: conversationsLoading } = useQuery<Conversation[]>({
+  const { data: conversationsRaw = [], isLoading: conversationsLoading } = useQuery<Conversation[]>({
     queryKey: ["/api/conversations"],
   });
+  const conversations = conversationsRaw.length > 0 ? conversationsRaw : [];
 
-  const { data: messages = [], isLoading: messagesLoading } = useQuery<(Message & { sender: User; receiver: User })[]>({
+  const fetchMessages: QueryFunction<any[], any> = async ({ queryKey }) => {
+    const userId = (queryKey as any[])[1] ?? null;
+    if (!userId) return [];
+    const res = await apiRequest("GET", `/api/messages/${userId}`);
+    return res.json();
+  };
+  const { data: messagesRaw = [], isLoading: messagesLoading } = useQuery<any[], Error>({
     queryKey: ["/api/messages", selectedUserId],
-    enabled: !!selectedUserId,
+    queryFn: fetchMessages,
+    enabled: !!selectedUserId
   });
+  const messages: any[] = Array.isArray(messagesRaw) ? messagesRaw : [];
+
+  useEffect(() => {
+    if (initialUserId) {
+      setSelectedUserId(Number(initialUserId));
+    }
+  }, [initialUserId]);
 
   const sendMessageMutation = useMutation({
     mutationFn: async ({ receiverId, content }: { receiverId: number; content: string }) => {
@@ -61,6 +83,15 @@ export default function MessagesPage() {
     "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=60&h=60",
   ];
 
+  console.log({
+    conversationsRaw,
+    conversations,
+    selectedUserId,
+    selectedUser,
+    messagesRaw,
+    messages
+  });
+
   if (conversationsLoading) {
     return (
       <div className="p-6 max-w-4xl mx-auto">
@@ -81,63 +112,98 @@ export default function MessagesPage() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold text-travel-dark mb-6">Messages</h2>
+      <div className="w-full flex justify-start mt-2 mb-4 px-4">
+        <BackButton />
+      </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Chat List */}
         <div className="lg:col-span-1">
           <Card>
             <CardHeader>
-              <h3 className="font-semibold text-travel-dark">Conversations</h3>
+              <div className="flex space-x-1 bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => setActiveTab('personal')}
+                  className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                    activeTab === 'personal'
+                      ? 'bg-white text-travel-navy shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Personal
+                </button>
+                <button
+                  onClick={() => setActiveTab('groups')}
+                  className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                    activeTab === 'groups'
+                      ? 'bg-white text-travel-navy shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                  disabled
+                >
+                  Groups
+                </button>
+              </div>
             </CardHeader>
             <CardContent className="p-0">
-              {conversations.length === 0 ? (
-                <div className="p-4 text-center text-gray-500">
-                  <p>No conversations yet</p>
-                  <p className="text-sm">Start matching to begin chatting!</p>
-                </div>
-              ) : (
-                <div className="divide-y divide-gray-100">
-                  {conversations.map((conversation) => {
-                    const userImage = userImages[conversation.user.id % userImages.length];
-                    return (
-                      <div
-                        key={conversation.user.id}
-                        className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors duration-300 ${
-                          selectedUserId === conversation.user.id ? 'bg-blue-50 border-r-2 border-travel-primary' : ''
-                        }`}
-                        onClick={() => setSelectedUserId(conversation.user.id)}
-                      >
-                        <div className="flex items-center space-x-3">
-                          <img 
-                            src={userImage}
-                            alt={conversation.user.name}
-                            className="w-12 h-12 rounded-full object-cover"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-travel-dark truncate">
-                              {conversation.user.name}
-                            </h4>
-                            <p className="text-sm text-gray-600 truncate">
-                              {conversation.lastMessage?.content || "No messages yet"}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            {conversation.lastMessage && (
-                              <span className="text-xs text-gray-500">
-                                {format(new Date(conversation.lastMessage.createdAt), "MMM dd")}
-                              </span>
-                            )}
-                            {conversation.unreadCount > 0 && (
-                              <Badge className="bg-travel-primary text-white mt-1">
-                                {conversation.unreadCount}
-                              </Badge>
-                            )}
+              {activeTab === 'personal' ? (
+                conversations.length === 0 ? (
+                  <div className="p-4 text-center text-gray-500">
+                    <p>No conversations yet</p>
+                    <p className="text-sm">Start a conversation and it will appear here!</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-100">
+                    {conversations.map((conversation) => {
+                      const userImage = userImages[conversation.user.id % userImages.length];
+                      return (
+                        <div
+                          key={conversation.user.id}
+                          className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors duration-300 ${
+                            selectedUserId === conversation.user.id ? 'bg-blue-50 border-r-2 border-travel-primary' : ''
+                          }`}
+                          onClick={() => setSelectedUserId(conversation.user.id)}
+                        >
+                          <div className="flex items-center space-x-3">
+                            <img 
+                              src={userImage}
+                              alt={conversation.user.name}
+                              className="w-12 h-12 rounded-full object-cover"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-medium text-travel-dark truncate">
+                                {conversation.user.name}
+                              </h4>
+                              <p className="text-sm text-gray-600 truncate">
+                                {conversation.lastMessage && ('content' in conversation.lastMessage ? conversation.lastMessage.content : "No messages yet")}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              {conversation.lastMessage &&
+                                ('createdAt' in conversation.lastMessage && conversation.lastMessage.createdAt ? (
+                                  <span className="text-xs text-gray-500">
+                                    {format(new Date(conversation.lastMessage.createdAt), "MMM dd")}
+                                  </span>
+                                ) : (
+                                  ""
+                                ))}
+                              {conversation.unreadCount > 0 && (
+                                <Badge className="bg-travel-primary text-white mt-1">
+                                  {conversation.unreadCount}
+                                </Badge>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
+                )
+              ) : (
+                <div className="p-4 text-center text-gray-400 select-none opacity-60">
+                  <svg width="64" height="64" fill="none" viewBox="0 0 24 24" className="mx-auto mb-4"><path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14l4-4h10a2 2 0 0 0 2-2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  <p className="text-lg font-medium mb-2">Group chat coming soon!</p>
+                  <p className="text-sm">You'll be able to chat with groups here in a future update.</p>
                 </div>
               )}
             </CardContent>
@@ -182,7 +248,11 @@ export default function MessagesPage() {
                     </div>
                   ) : (
                     messages.map((message) => {
-                      const isCurrentUser = message.sender.id !== selectedUserId;
+                      const isCurrentUser = message.sender && message.sender.id === user?.id;
+                      let createdAt: string | null = null;
+                      if ('createdAt' in message && message.createdAt) {
+                        createdAt = message.createdAt;
+                      }
                       return (
                         <div key={message.id} className={`flex items-start space-x-3 ${isCurrentUser ? 'justify-end' : ''}`}>
                           {!isCurrentUser && (
@@ -197,10 +267,12 @@ export default function MessagesPage() {
                               ? 'bg-travel-primary text-white rounded-tr-sm' 
                               : 'bg-gray-100 rounded-tl-sm'
                           }`}>
-                            <p className="text-sm">{message.content}</p>
-                            <span className={`text-xs ${isCurrentUser ? 'text-red-100' : 'text-gray-500'}`}>
-                              {format(new Date(message.createdAt), "HH:mm")}
-                            </span>
+                            <p className="text-sm">{'content' in message ? message.content : ''}</p>
+                            {createdAt ? (
+                              <span className={`text-xs ${isCurrentUser ? 'text-red-100' : 'text-gray-500'}`}>
+                                {format(new Date(createdAt), "HH:mm")}
+                              </span>
+                            ) : null}
                           </div>
                         </div>
                       );
@@ -222,18 +294,19 @@ export default function MessagesPage() {
                       type="submit"
                       size="icon"
                       disabled={!messageInput.trim() || sendMessageMutation.isPending}
-                      className="rounded-full bg-travel-primary hover:bg-red-500"
+                      className="rounded-full bg-travel-primary hover:bg-travel-mint transform-gpu transition-all duration-300 ease-in-out hover:shadow-lg hover:ring-2 hover:ring-travel-navy focus:ring-2 focus:ring-travel-navy"
                     >
-                      <Send className="w-4 h-4" />
+                      <Send className="w-4 h-4 text-travel-navy" />
                     </Button>
                   </form>
                 </div>
               </>
             ) : (
               <CardContent className="flex-1 flex items-center justify-center">
-                <div className="text-center text-gray-500">
-                  <p className="text-lg font-medium mb-2">Select a conversation</p>
-                  <p className="text-sm">Choose someone to start chatting with</p>
+                <div className="text-center text-gray-400 select-none opacity-60">
+                  <svg width="64" height="64" fill="none" viewBox="0 0 24 24" className="mx-auto mb-4"><path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14l4-4h10a2 2 0 0 0 2-2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  <p className="text-lg font-medium mb-2">No messages yet</p>
+                  <p className="text-sm">Start a conversation and it will appear here!</p>
                 </div>
               </CardContent>
             )}

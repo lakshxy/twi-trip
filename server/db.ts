@@ -1,15 +1,22 @@
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import ws from "ws";
-import * as schema from "@shared/schema";
+import 'dotenv/config';
+import { initializeApp, cert, getApps } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
 
-neonConfig.webSocketConstructor = ws;
-
-if (!process.env.DATABASE_URL) {
+if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
   throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?",
+    "FIREBASE_SERVICE_ACCOUNT must be set in .env file"
   );
 }
 
-export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-export const db = drizzle({ client: pool, schema });
+const firebaseApp = getApps().length === 0 
+  ? initializeApp({
+      credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT))
+    })
+  : getApps()[0];
+
+export const db = getFirestore(firebaseApp);
+
+// Optional Firestore settings
+db.settings({
+  ignoreUndefinedProperties: true
+});

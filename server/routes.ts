@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, insertProfileSchema, insertPropertySchema, insertRideSchema, insertMessageSchema, insertSwipeSchema, insertPropertyInterestSchema, insertRideRequestSchema } from "@shared/schema";
+import { insertUserSchema, insertProfileSchema, insertPropertySchema, insertRideSchema, insertMessageSchema, insertSwipeSchema, insertPropertyInterestSchema, insertRideRequestSchema, insertItinerarySchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // User routes
@@ -39,29 +39,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Get user error:", error);
       res.status(500).json({ message: "Failed to get user" });
-    }
-  });
-
-  app.post("/api/auth/demo-login", async (req, res) => {
-    try {
-      // Create or get demo user
-      const demoEmail = "demo@ticktrip.com";
-      let user = await storage.getUserByEmail(demoEmail);
-      
-      if (!user) {
-        // Create demo user
-        user = await storage.createUser({ 
-          email: demoEmail, 
-          name: "Demo Explorer" 
-        });
-      }
-
-      // Store user session
-      (req.session as any).userId = user.id;
-      res.json({ user });
-    } catch (error) {
-      console.error("Demo login error:", error);
-      res.status(500).json({ message: "Demo login failed" });
     }
   });
 
@@ -300,6 +277,145 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Get matches error:", error);
       res.status(500).json({ message: "Failed to get matches" });
+    }
+  });
+
+  // Itinerary routes
+  app.get("/api/itinerary", async (req, res) => {
+    try {
+      const userId = (req.session as any)?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      const itineraries = await storage.getItinerariesByUser(userId);
+      res.json(itineraries);
+    } catch (error) {
+      console.error("Get itineraries error:", error);
+      res.status(500).json({ message: "Failed to get itineraries" });
+    }
+  });
+
+  app.post("/api/itinerary", async (req, res) => {
+    try {
+      const userId = (req.session as any)?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      const data = insertItinerarySchema.parse({ ...req.body, userId });
+      const itinerary = await storage.createItinerary(data);
+      res.json(itinerary);
+    } catch (error) {
+      console.error("Create itinerary error:", error);
+      res.status(500).json({ message: "Failed to create itinerary" });
+    }
+  });
+
+  app.put("/api/itinerary/:id", async (req, res) => {
+    try {
+      const userId = (req.session as any)?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      const id = parseInt(req.params.id);
+      const data = req.body;
+      // Optionally validate fields here
+      const itinerary = await storage.updateItinerary(id, data);
+      res.json(itinerary);
+    } catch (error) {
+      console.error("Update itinerary error:", error);
+      res.status(500).json({ message: "Failed to update itinerary" });
+    }
+  });
+
+  app.delete("/api/itinerary/:id", async (req, res) => {
+    try {
+      const userId = (req.session as any)?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      const id = parseInt(req.params.id);
+      const itinerary = await storage.deleteItinerary(id);
+      res.json(itinerary);
+    } catch (error) {
+      console.error("Delete itinerary error:", error);
+      res.status(500).json({ message: "Failed to delete itinerary" });
+    }
+  });
+
+  // Tour Guide routes
+  app.get("/api/tour-guides", async (req, res) => {
+    try {
+      const { location, specialty } = req.query;
+      const guides = await storage.getTourGuides({
+        location: location ? String(location) : undefined,
+        specialty: specialty ? String(specialty) : undefined,
+      });
+      res.json(guides);
+    } catch (error) {
+      console.error("Get tour guides error:", error);
+      res.status(500).json({ message: "Failed to get tour guides" });
+    }
+  });
+
+  app.get("/api/tour-guides/my", async (req, res) => {
+    try {
+      const userId = (req.session as any)?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      const guides = await storage.getMyTourGuides(userId);
+      res.json(guides);
+    } catch (error) {
+      console.error("Get my tour guides error:", error);
+      res.status(500).json({ message: "Failed to get your tour guides" });
+    }
+  });
+
+  app.post("/api/tour-guides", async (req, res) => {
+    try {
+      const userId = (req.session as any)?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      const data = { ...req.body, userId };
+      // Optionally validate data here
+      const guide = await storage.createTourGuide(data);
+      res.json(guide);
+    } catch (error) {
+      console.error("Create tour guide error:", error);
+      res.status(500).json({ message: "Failed to create tour guide" });
+    }
+  });
+
+  app.patch("/api/tour-guides/:id", async (req, res) => {
+    try {
+      const userId = (req.session as any)?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      const id = parseInt(req.params.id);
+      const data = req.body;
+      // Optionally validate data here
+      const guide = await storage.updateTourGuide(id, data);
+      res.json(guide);
+    } catch (error) {
+      console.error("Update tour guide error:", error);
+      res.status(500).json({ message: "Failed to update tour guide" });
+    }
+  });
+
+  app.delete("/api/tour-guides/:id", async (req, res) => {
+    try {
+      const userId = (req.session as any)?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      const id = parseInt(req.params.id);
+      const guide = await storage.deleteTourGuide(id);
+      res.json(guide);
+    } catch (error) {
+      console.error("Delete tour guide error:", error);
+      res.status(500).json({ message: "Failed to delete tour guide" });
     }
   });
 

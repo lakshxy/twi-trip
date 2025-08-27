@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss";
 
 export default {
-  darkMode: ["class"],
+  darkMode: 'class', // Enable dark mode via class strategy
   content: ["./client/index.html", "./client/src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
@@ -69,6 +69,16 @@ export default {
           light: "var(--travel-light)",
           dark: "var(--travel-dark)",
         },
+        'travel-navy': '#1a2540',
+        'travel-light': '#f7f9fc',
+        'travel-mint': '#4fd1c5',
+        'travel-lavender': '#b794f4',
+        'travel-terracotta': '#f56565',
+        'travel-sage': '#68d391',
+        'travel-beige': '#f5f5dc',
+        'travel-primary': '#6366f1',
+        'travel-accent': '#fbbf24',
+        'travel-dark': '#111827',
       },
       keyframes: {
         "accordion-down": {
@@ -94,5 +104,5 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
+  plugins: [],
 } satisfies Config;

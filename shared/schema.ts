@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, varchar, decimal, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, varchar, decimal, jsonb, date } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -8,6 +8,7 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   email: text("email").notNull().unique(),
   name: text("name").notNull(),
+  role: text("role").default("user"), // 'user' | 'agency'
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -25,6 +26,21 @@ export const profiles = pgTable("profiles", {
   age: integer("age"),
   rating: decimal("rating", { precision: 3, scale: 2 }).default("0"),
   tripCount: integer("trip_count").default(0),
+  // New fields for full signup/profile
+  roles: text("roles").array(),
+  purposes: text("purposes").array(),
+  frequency: text("frequency"),
+  hosting: text("hosting"),
+  stayType: text("stay_type"),
+  stayCost: text("stay_cost"),
+  maxGuests: integer("max_guests"),
+  amenities: text("amenities").array(),
+  nextDest: text("next_dest"),
+  arrival: text("arrival"),
+  duration: text("duration"),
+  lookingFor: text("looking_for").array(),
+  connectWith: text("connect_with").array(),
+  comms: text("comms").array(),
 });
 
 // Properties/Homestays
@@ -103,6 +119,52 @@ export const rideRequests = pgTable("ride_requests", {
   rideId: integer("ride_id").references(() => rides.id).notNull(),
   status: text("status").default("pending"), // 'pending', 'approved', 'rejected'
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Itinerary table
+export const itineraries = pgTable("itineraries", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  title: text("title").notNull(),
+  destination: text("destination").notNull(),
+  date: date("date").notNull(),
+  type: text("type").notNull(), // 'flight' | 'hotel' | 'activity'
+  status: text("status").default("upcoming"), // 'upcoming' | 'completed' | 'cancelled'
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Tour Guides
+export const tourGuides = pgTable("tour_guides", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  location: text("location").notNull(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  specialties: text("specialties").array().notNull(),
+  languages: text("languages").array().notNull(),
+  pricePerHour: varchar("price_per_hour", { length: 16 }),
+  pricePerDay: varchar("price_per_day", { length: 16 }),
+  rating: decimal("rating", { precision: 3, scale: 2 }).default("0"),
+  totalReviews: integer("total_reviews").default(0),
+  verified: boolean("verified").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Groups table (for agency-created group chats)
+export const groups = pgTable("groups", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  createdBy: integer("created_by").references(() => users.id).notNull(), // agency user
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Group members table
+export const groupMembers = pgTable("group_members", {
+  id: serial("id").primaryKey(),
+  groupId: integer("group_id").references(() => groups.id).notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  joinedAt: timestamp("joined_at").defaultNow(),
 });
 
 // Relations
@@ -199,6 +261,26 @@ export const insertRideRequestSchema = createInsertSchema(rideRequests).omit({
   status: true,
 });
 
+export const insertItinerarySchema = createInsertSchema(itineraries).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertTourGuideSchema = createInsertSchema(tourGuides).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertGroupSchema = createInsertSchema(groups).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertGroupMemberSchema = createInsertSchema(groupMembers).omit({
+  id: true,
+  joinedAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -223,3 +305,15 @@ export type InsertPropertyInterest = z.infer<typeof insertPropertyInterestSchema
 
 export type RideRequest = typeof rideRequests.$inferSelect;
 export type InsertRideRequest = z.infer<typeof insertRideRequestSchema>;
+
+export type Itinerary = typeof itineraries.$inferSelect;
+export type InsertItinerary = z.infer<typeof insertItinerarySchema>;
+
+export type TourGuide = typeof tourGuides.$inferSelect;
+export type InsertTourGuide = z.infer<typeof insertTourGuideSchema>;
+
+export type Group = typeof groups.$inferSelect;
+export type InsertGroup = z.infer<typeof insertGroupSchema>;
+
+export type GroupMember = typeof groupMembers.$inferSelect;
+export type InsertGroupMember = z.infer<typeof insertGroupMemberSchema>;
