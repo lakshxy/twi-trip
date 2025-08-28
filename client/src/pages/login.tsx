@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, Redirect } from "wouter";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,20 +14,12 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Redirect if user is already logged in
-  useEffect(() => {
-    if (user && !authLoading) {
-      setLocation(firebaseUser?.emailVerified ? "/explore" : "/verify-email");
-    }
-  }, [user, authLoading, setLocation, firebaseUser]);
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
       await signIn(email, password);
       toast({ title: "Login Successful", description: "Welcome back!" });
-      // The redirect is handled by the useEffect above
     } catch (error: any) {
       console.error("Login error:", error);
       let errorMessage = "An unexpected error occurred. Please try again.";
@@ -42,7 +34,6 @@ export default function LoginPage() {
           errorMessage = "Please enter a valid email address.";
           break;
         default:
-          // Keep the generic error message for other cases
           break;
       }
       toast({
@@ -55,12 +46,18 @@ export default function LoginPage() {
     }
   };
 
-  if (authLoading && !user) {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-xl">Loading...</div>
       </div>
     );
+  }
+
+  if (user) {
+    if (!firebaseUser?.emailVerified) return <Redirect to="/verify-email" />;
+    if (!user.profileComplete) return <Redirect to="/create-profile" />;
+    return <Redirect to="/explore" />;
   }
 
   return (

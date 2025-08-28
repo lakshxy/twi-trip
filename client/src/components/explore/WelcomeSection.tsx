@@ -7,19 +7,22 @@ interface WelcomeSectionProps {
 
 const WelcomeSection: React.FC<WelcomeSectionProps> = ({ welcomeMessage }) => {
   return (
-    <div className="mb-8 relative">
-      <div className="bg-gradient-to-r from-travel-navy/10 via-travel-mint/10 to-travel-soft-lavender/10 rounded-2xl p-6 md:p-8 border border-travel-soft-lavender/20">
+    // Add animation and a more vibrant background
+    <div className="mb-8 animate-fade-in">
+      {/* Applying a primary gradient and making text white for contrast */}
+      <div className="bg-gradient-primary text-white rounded-2xl p-6 md:p-8 shadow-lg">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-travel-navy mb-2 md:mb-3 font-poppins">
+            <h1 className="text-2xl md:text-4xl font-bold mb-2">
               {welcomeMessage} ✈️
             </h1>
-            <p className="text-travel-navy/70 text-base md:text-lg">
+            <p className="text-sm md:text-lg opacity-80">
               Ready for your next adventure? Let's explore the world together!
             </p>
           </div>
           <div className="hidden md:block">
-            <div className="text-5xl md:text-6xl animate-bounce">🌍</div>
+            {/* Using a more subtle animation */}
+            <div className="text-5xl md:text-6xl transform transition-transform duration-500 hover:scale-110">🌍</div>
           </div>
         </div>
       </div>

@@ -1,79 +1,59 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface FilterSectionProps {
   filterRoles: string[];
-  setFilterRoles: (roles: string[] | ((prev: string[]) => string[])) => void;
+  setFilterRoles: (roles: string[]) => void;
   filterPurposes: string[];
-  setFilterPurposes: (purposes: string[] | ((prev: string[]) => string[])) => void;
+  setFilterPurposes: (purposes: string[]) => void;
 }
 
-const FilterSection: React.FC<FilterSectionProps> = ({ filterRoles, setFilterRoles, filterPurposes, setFilterPurposes }) => {
-  const roles = [
-    'Explore new places',
-    'Meet new people',
-    'Offer a place to stay',
-    'Share local experiences',
-    'Organize group trips',
-    'Provide rides or transport',
-    'Help plan travel',
-    'Connect travelers with services',
-  ];
+const FilterSection: React.FC<FilterSectionProps> = ({ 
+  filterRoles, 
+  setFilterRoles, 
+  filterPurposes, 
+  setFilterPurposes 
+}) => {
 
-  const purposes = [
-    'Adventure & Exploration',
-    'Work & Networking',
-    'Volunteering & Giving Back',
-    'Cultural Exchange',
-    'Group Travel',
-    'Local Experiences',
-    'Travel Planning & Support',
-  ];
+  const roles = ["Traveler", "Local Guide", "Host"];
+  const purposes = ["Adventure", "Relaxation", "Business"];
 
   return (
-    <div className="mb-8">
-      <Card className="border-travel-mint/30 shadow-lg">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-travel-navy text-base md:text-lg">🔎 Filter People</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="mb-4">
-            <label className="font-semibold text-travel-navy text-sm md:text-base">I want to...</label>
-            <div className="flex gap-2 flex-wrap mt-2">
+    <Card className="shadow-lg">
+      <CardHeader>
+        <CardTitle className="text-travel-navy text-lg md:text-xl">Find Your Connection</CardTitle>
+      </CardHeader>
+      <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Role</label>
+          <Select onValueChange={setFilterRoles} value={filterRoles.join(', ')}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select roles" />
+            </SelectTrigger>
+            <SelectContent>
               {roles.map(role => (
-                <Button
-                  key={role}
-                  type="button"
-                  variant={filterRoles.includes(role) ? 'default' : 'outline'}
-                  onClick={() => setFilterRoles(f => f.includes(role) ? f.filter(r => r !== role) : [...f, role])}
-                  className="text-xs md:text-sm"
-                >
-                  {role}
-                </Button>
+                <SelectItem key={role} value={role}>{role}</SelectItem>
               ))}
-            </div>
-          </div>
-          <div>
-            <label className="font-semibold text-travel-navy text-sm md:text-base">My main purpose</label>
-            <div className="flex gap-2 flex-wrap mt-2">
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Purpose</label>
+          <Select onValueChange={setFilterPurposes} value={filterPurposes.join(', ')}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select purposes" />
+            </SelectTrigger>
+            <SelectContent>
               {purposes.map(purpose => (
-                <Button
-                  key={purpose}
-                  type="button"
-                  variant={filterPurposes.includes(purpose) ? 'default' : 'outline'}
-                  onClick={() => setFilterPurposes(f => f.includes(purpose) ? f.filter(p => p !== purpose) : [...f, purpose])}
-                  className="text-xs md:text-sm"
-                >
-                  {purpose}
-                </Button>
+                <SelectItem key={purpose} value={purpose}>{purpose}</SelectItem>
               ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+            </SelectContent>
+          </Select>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

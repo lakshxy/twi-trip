@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, Link } from 'wouter';
+import { useLocation, Link, Redirect } from 'wouter';
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,12 +13,6 @@ export default function SignupPage() {
   const [formData, setFormData] = useState({ email: "", password: "", name: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (!authLoading && user) {
-      setLocation(firebaseUser?.emailVerified ? '/explore' : '/verify-email');
-    }
-  }, [user, authLoading, setLocation, firebaseUser]);
-
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -29,7 +23,8 @@ export default function SignupPage() {
     }
     try {
       await signUp(formData.email, formData.password, formData.name);
-      toast({ title: "Welcome to TwiTrip!", description: "You\'ve successfully signed up. Please verify your email." });
+      toast({ title: "Welcome to TwiTrip!", description: "You've successfully signed up. Please verify your email." });
+      setLocation('/verify-email');
     } catch (error: any) {
       console.error('Signup error:', error);
       let errorMessage = "Signup failed. Please try again.";
@@ -57,12 +52,18 @@ export default function SignupPage() {
     }
   };
 
-  if (authLoading && !user) {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-xl">Loading...</div>
       </div>
     );
+  }
+
+  if (user) {
+    if (!firebaseUser?.emailVerified) return <Redirect to="/verify-email" />;
+    if (!user.profileComplete) return <Redirect to="/create-profile" />;
+    return <Redirect to="/explore" />;
   }
 
   return (
@@ -76,9 +77,6 @@ export default function SignupPage() {
             <div className="space-y-3 mb-4">
               <Button onClick={handleGoogleSignIn} variant="outline" className="w-full">
                  Sign Up with Google
-              </Button>
-              <Button onClick={() => setLocation('/email-link-signup')} variant="outline" className="w-full">
-                 Sign Up with Email Link
               </Button>
             </div>
             <div className="relative my-4">
