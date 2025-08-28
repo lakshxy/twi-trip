@@ -34,7 +34,7 @@ const AppRoutes = () => {
   return (
     <Switch>
       <Route path="/">
-        {user ? <Redirect to="/explore" /> : <Redirect to="/login" />}
+        {user ? <Redirect to="/explore" /> : <HomePage />}
       </Route>
       <Route path="/login">
         {user ? <Redirect to="/explore" /> : <LoginPage />}
@@ -93,7 +93,7 @@ const AppRoutes = () => {
         {!user ? <Redirect to="/login" /> : <TourGuidesPage />}
       </Route>
       <Route path="/home">
-        {!user ? <Redirect to="/login" /> : <HomePage />}
+        <HomePage />
       </Route>
       <Route>
         <NotFoundPage />
