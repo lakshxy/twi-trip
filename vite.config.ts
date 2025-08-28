@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   root: './client',
   server: {
-    port: 5173
+    port: 5176
   },
   test: {
     globals: true,

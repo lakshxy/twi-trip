@@ -8,7 +8,7 @@ import logo from "@/assets/twi logo.png";
 
 export default function LoginPage() {
   const [, setLocation] = useLocation();
-  const { signIn, user, isLoading: authLoading } = useAuth();
+  const { signIn, user, isLoading: authLoading, firebaseUser } = useAuth();
   const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -17,9 +17,9 @@ export default function LoginPage() {
   // Redirect if user is already logged in
   useEffect(() => {
     if (user && !authLoading) {
-      setLocation("/explore");
+      setLocation(firebaseUser?.emailVerified ? "/explore" : "/verify-email");
     }
-  }, [user, authLoading, setLocation]);
+  }, [user, authLoading, setLocation, firebaseUser]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,7 +55,7 @@ export default function LoginPage() {
     }
   };
 
-  if (authLoading) {
+  if (authLoading && !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-xl">Loading...</div>

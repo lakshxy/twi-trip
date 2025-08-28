@@ -8,16 +8,16 @@ import logo from "@/assets/twi logo.png";
 
 export default function SignupPage() {
   const [, setLocation] = useLocation();
-  const { signUp, user, isLoading: authLoading } = useAuth();
+  const { signUp, user, isLoading: authLoading, firebaseUser, signInWithGoogle } = useAuth();
   const { toast } = useToast();
   const [formData, setFormData] = useState({ email: "", password: "", name: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!authLoading && user) {
-      setLocation('/explore');
+      setLocation(firebaseUser?.emailVerified ? '/explore' : '/verify-email');
     }
-  }, [user, authLoading, setLocation]);
+  }, [user, authLoading, setLocation, firebaseUser]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +29,7 @@ export default function SignupPage() {
     }
     try {
       await signUp(formData.email, formData.password, formData.name);
-      toast({ title: "Welcome to TwiTrip!", description: "You've successfully signed up." });
+      toast({ title: "Welcome to TwiTrip!", description: "You\'ve successfully signed up. Please verify your email." });
     } catch (error: any) {
       console.error('Signup error:', error);
       let errorMessage = "Signup failed. Please try again.";
@@ -48,7 +48,16 @@ export default function SignupPage() {
     }
   };
 
-  if (authLoading) {
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithGoogle();
+      toast({ title: "Signed in with Google!" });
+    } catch (error) {
+      toast({ title: "Google Sign-In Failed", description: "Could not sign in with Google. Please try again.", variant: "destructive" });
+    }
+  };
+
+  if (authLoading && !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-xl">Loading...</div>
@@ -64,12 +73,28 @@ export default function SignupPage() {
           <div className="w-full max-w-xs text-center">
             <img src={logo} alt="TwiTrip Logo" className="w-14 h-14 mx-auto mb-5" />
             <h2 className="text-2xl sm:text-3xl font-bold text-travel-navy mb-6">Create your TwiTrip account</h2>
+            <div className="space-y-3 mb-4">
+              <Button onClick={handleGoogleSignIn} variant="outline" className="w-full">
+                 Sign Up with Google
+              </Button>
+              <Button onClick={() => setLocation('/email-link-signup')} variant="outline" className="w-full">
+                 Sign Up with Email Link
+              </Button>
+            </div>
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t"></span>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-2 text-muted-foreground">Or continue with</span>
+              </div>
+            </div>
             <form onSubmit={handleSignup} className="space-y-4">
               <Input name="name" type="text" placeholder="Full Name" required value={formData.name} onChange={e => setFormData(f => ({ ...f, name: e.target.value }))} />
               <Input name="email" type="email" placeholder="Email" required value={formData.email} onChange={e => setFormData(f => ({ ...f, email: e.target.value }))} />
               <Input name="password" type="password" placeholder="Password (min. 8 characters)" required value={formData.password} onChange={e => setFormData(f => ({ ...f, password: e.target.value }))} />
               <Button type="submit" className="w-full bg-gradient-primary text-white font-semibold py-3 rounded-xl" disabled={isSubmitting}>
-                {isSubmitting ? 'Creating account...' : 'Sign up'}
+                {isSubmitting ? 'Creating account...' : 'Create Account'}
               </Button>
             </form>
             <p className="text-sm text-gray-600 pt-4">
